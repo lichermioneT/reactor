@@ -1,0 +1,26 @@
+| 函数     | 说明                       |
+| ------ | ------------------------ |
+| execl  | 路径 + 可变参数                |
+| execlp | 在 PATH 中搜索 + 可变参数        |
+| execv  | 路径 + 参数数组                |
+| execvp | 在 PATH 中搜索 + 参数数组        |
+| execle | 路径 + 可变参数 + 自定义环境变量      |
+| execve | 路径 + 参数数组 + 自定义环境变量（最底层） |
+
+// 1. execl() - 列表参数，继承环境
+int execl(const char *path, const char *arg0, ..., (char *)NULL);
+
+// 2. execv() - 数组参数，继承环境  
+int execv(const char *path, char *const argv[]);
+
+// 3. execlp() - 列表参数，继承环境，搜索PATH
+int execlp(const char *file, const char *arg0, ..., (char *)NULL);
+
+// 4. execvp() - 数组参数，继承环境，搜索PATH
+int execvp(const char *file, char *const argv[]);
+
+// 5. execle() - 列表参数，自定义环境
+int execle(const char *path, const char *arg0, ..., (char *)NULL, char *const envp[]);
+
+// 6. execve() - 数组参数，自定义环境，系统调用
+int execve(const char *path, char *const argv[], char *const envp[]);cd
