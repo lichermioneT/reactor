@@ -9,6 +9,7 @@ enum FDEvent
   WriteEvent = 0x04
 };
 
+// 把fd，事件类型，回调函数和用户数据绑定在一起的
 struct Channel
 {
   // 文件描述符
@@ -24,7 +25,9 @@ struct Channel
 
 // 初始化一个channel
 struct Channel* channelInit(int fd, int events, handleFunc readFunc, handleFunc writeFunc, void* arg);
+
 // 修改fd的写事件(或者不检查) 
 void writeEventEnable(struct Channel* channel, bool flag);
+
 // 判断是否需要检查文件描述符的写事件
 bool isWriteEventEnable(struct Channel* channel);

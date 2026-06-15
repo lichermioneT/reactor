@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <stdbool.h>
 #include "channelmap.h"
 
@@ -28,9 +29,28 @@ void ChannelMapClear(struct ChannelMap* map)
   map->size = 0;
 }
 
-
 bool makeMapRoom(struct ChannelMap* map, int newSize, int unitsize)
 {
-    
+  if(map->size < newSize)
+  {
+    int curSize = map->size;
+    while(curSize < newSize)
+    {
+      curSize *= 2;
+    }
 
+    // 扩容
+    struct Channel** temp = (struct Channel**)realloc(map->list, curSize *  unitsize);
+    if(temp == NULL)
+    {
+      return false;
+
+    }
+
+    map->list = temp;
+    memset(map->list[map->size], 0, (curSize - map->size) * unitsize); 
+    map->size = curSize;
+  }
+  
+  return true;
 }

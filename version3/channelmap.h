@@ -1,6 +1,7 @@
 #pragma once
 #include "channel.h"
 
+// 这里是存放size个Channel指针的。
 struct ChannelMap
 {
   int size; // 记录指针指向指针数组元素个数
