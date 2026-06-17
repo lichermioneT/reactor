@@ -1,6 +1,5 @@
 #pragma once
 #include <stdbool.h>
-
 // 1.函数指针
 typedef int(*handleFunc)(void* arg);
 

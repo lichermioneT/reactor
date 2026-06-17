@@ -13,5 +13,4 @@ struct ChannelMap* channelMapInit(int size);
 void channelMapClear(struct ChannelMap* map);
 // 3.重新进行扩容
 bool makeMapRoom(struct ChannelMap* map, int newSize, int unitSize);
-
 // 用一个数组保存 fd 和 Channel 的映射关系。

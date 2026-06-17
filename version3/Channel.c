@@ -18,6 +18,7 @@ struct Channel* channelInit(int fd, int events, handleFunc reaFunc, handleFunc w
   data->events = events;
   data->readCallback = reaFunc;
   data->writeCallback = writeFunc;
+  // 读写函数需要的参数
   data->arg = arg;
   
   // 3.返回给调用者
