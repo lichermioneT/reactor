@@ -139,15 +139,16 @@ static int selectdispatch(struct EventLoop* evloop, int timeout)
     exit(0);
   }
 
+  // 激活读写事件
   for(int i = 0; i < Max; ++i)
   {
     if(FD_ISSET(i, &rdtmp))
     {
-
+      eventActivate(evloop, i, ReadEvent);
     }
     if(FD_ISSET(i, &wrtmp))
     {
-
+      eventActivate(evloop, i, WriteEvent);
     }
   }
 

@@ -141,13 +141,14 @@ static int epolldispatch(struct EventLoop* evloop, int timeout)
       continue;
     }
 
+    // 事件的激活
     if(events & EPOLLIN)
     {
-
+      eventActivate(evloop, fd, ReadEvent);
     }
     if(events & EPOLLOUT)
     {
-
+      eventActivate(evloop, fd, WriteEvent);
     }
   }
 
@@ -160,4 +161,5 @@ static int epollclear(struct EventLoop* evloop)
   free(data->events);
   close(data->epfd);
   free(data);
+  return 0;
 }

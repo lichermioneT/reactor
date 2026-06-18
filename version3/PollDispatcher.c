@@ -177,13 +177,14 @@ static int epolldispatch(struct EventLoop* evloop, int timeout)
       continue;
     }
 
+    // 激活读写事件的
     if(data->fds[i].revents * POLLIN)
     {
-
+        eventActivate(evloop, data->fds[i].fd, ReadEvent);
     }
     if(data->fds[i].revents & POLLOUT)
     {
-
+        eventActivate(evloop, data->fds[i].fd, WriteEvent);
     }
 
   }
