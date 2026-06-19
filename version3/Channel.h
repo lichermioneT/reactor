@@ -7,17 +7,17 @@ typedef int(*handleFunc)(void* arg);
 enum FDEvent
 {
   // TimeOut = 0x01,
-  ReadEvent = 0x02,  // 二进制：10
-  WriteEvent = 0x04  // 二进制：100
+  ReadEvent = 0x02,  // 二进制：0010
+  WriteEvent = 0x04  // 二进制：0100
 };
 
 struct Channel
 {
   //1.文件描述符
   int fd;
-  //2.需要处理的事件
+  //2.需要处理的事件,读还是写
   int events;
-  //3.处理时间对应的函数
+  //3.处理事件对应的函数
   handleFunc readCallback;
   handleFunc writeCallback;
   
@@ -25,7 +25,7 @@ struct Channel
   void* arg;
 };
 
-// 1.初始化一个Channel
+// 1.初始化一个Channel,开空间存放数据
 struct Channel* channelInit(int fd, int events, handleFunc reaFunc, handleFunc writeFunc, void* arg);
 
 // 2.修改fd的写事件(检测，或者不被检查)

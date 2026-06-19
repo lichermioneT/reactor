@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// 1.初始化数据的
+// 1.开空间，初始化数据的
 struct Channel* channelInit(int fd, int events, handleFunc reaFunc, handleFunc writeFunc, void* arg)
 {
   // 1.申请内存
@@ -21,7 +21,7 @@ struct Channel* channelInit(int fd, int events, handleFunc reaFunc, handleFunc w
   // 读写函数需要的参数
   data->arg = arg;
   
-  // 3.返回给调用者
+  // 3.返回给调用者,返回一个channel的指针。
   return data;
 }
 

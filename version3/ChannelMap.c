@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// ChannelMap是一个指针数组，里面存放的是指针。
 struct ChannelMap* channelMapInit(int size)
 {
   // 1.开辟一个空间struct ChannelMap。
@@ -58,7 +59,6 @@ void channelMapClear(struct ChannelMap* map)
   
 #endif
 }
-
 
 bool makeMapRoom(struct ChannelMap* map, int newSize, int unitSize)
 {
