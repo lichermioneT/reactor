@@ -7,6 +7,11 @@
 #include <string.h>
 #include <sys/socket.h>
 
+/*
+ *hannelMap：保存“fd 对应哪个 Channel”
+ *任务队列：保存“接下来要对 Channel 做什么操作”
+ */
+
 // 写数据
 void taskWakeup(struct EventLoop* evLoop)
 {
@@ -200,6 +205,7 @@ int eventLoopProcessTask(struct EventLoop* evLoop)
 
   return 0;
 }
+
 
 int eventLoopAdd(struct EventLoop* evLoop, struct Channel* channel)
 {

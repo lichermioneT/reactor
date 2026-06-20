@@ -1,8 +1,11 @@
-#include "WorkdeThread.h"
 #include <stdio.h>
+#include "WorkdeThread.h"
 
+
+// 1.初始化workThread的结构体
 int workerThreadInit(struct WorkThread* thread, int index)
 {
+  // 初始化子线程对应的结构体
   thread->evLoop = NULL;
   thread->threadID = 0;
   sprintf(thread->name, "SubThread-%d", index);
@@ -13,7 +16,7 @@ int workerThreadInit(struct WorkThread* thread, int index)
   return 0;
 }
 
-// 子线程的回调函数
+// 2.1子线程的回调函数
 void* subThreadRunning(void* arg)
 {
   struct WorkThread* thread = (struct WorkThread*)arg;
@@ -26,9 +29,10 @@ void* subThreadRunning(void* arg)
 
   eventLoopRun(thread->evLoop);
 
-  return NULL;
+  return thread;
 }
 
+// 2.创建一个子线程执行反应堆的模型。
 void  workerThreadRun(struct WorkThread* thread)
 {
   // 1.创建子线程

@@ -2,6 +2,21 @@
 #include "EventLoop.h"
 #include "Channel.h"
 
+/*
+Dispatcher模块的总结
+这里主要是六个函数指针的封装
+struct Dispatcher 
+{
+  init 
+  add 
+  remove 
+  modify 
+  dispatch 
+  clear
+}
+
+ */
+
 // 里面存放的是函数指针，就是方法
 struct Dispatcher
 {

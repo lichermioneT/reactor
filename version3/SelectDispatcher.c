@@ -4,6 +4,27 @@
 #include <stdlib.h>
 #include <sys/select.h>
 
+/*
+selectdispatch模块的总结
+1.开辟额外的空间给select使用
+2.channel合格就添加到反应堆
+3.channel合格就从反映里面修改读写
+4.channel合计就从反应堆里面删除
+5.开始监听
+6.删除额外的数组
+*/
+
+/*
+selectdispatch模块的总结
+1.初始化函数, 初始化select读写需要额外的数组
+2.添加函数，读写事件添加到上面的数组，后续的监听
+3.移除函数，读写事件从上面的数组里面进行删除了
+4.修改：添加或者删除
+5.事件的检查，然后分发给读写函数
+6.清理刚才开辟的数组
+*/
+
+
 // Dispatcher 是底层事件检测机制的抽象接口；
 // EventLoop 是上层事件循环对象，它通过 Dispatcher 去管理和分发 fd 事件
 
@@ -68,7 +89,7 @@ static void clearFdSet(struct Channel* channel, struct SelectData* data)
 }
 
 // 初始化eselect需要的数据
-static void* eselectinit()
+static void* selectinit()
 {
   // 1.开辟堆空间，存放select需要的数据
   struct SelectData* data = (struct SelectData*)malloc(sizeof(struct SelectData));

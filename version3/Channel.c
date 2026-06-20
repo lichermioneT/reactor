@@ -13,7 +13,7 @@ struct Channel* channelInit(int fd, int events, handleFunc reaFunc, handleFunc w
     return NULL;
   }
   
-  // 2.内存写数据
+  // 2.内存里面写数据
   data->fd = fd;
   data->events = events;
   data->readCallback = reaFunc;

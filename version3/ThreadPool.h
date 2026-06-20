@@ -18,3 +18,5 @@ struct ThreadPool
 struct ThreadPool* threadPollInit(struct EventLoop* mainLoop, int count);
 // 启动线程池
 void threadPoolRun(struct ThreadPool* pool);
+// 取出线程池中的某个子线程的反应堆示例
+struct EventLoop* takeWorkerEventLoop(struct ThreadPool* pool);

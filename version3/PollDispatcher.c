@@ -4,6 +4,16 @@
 #include <stdlib.h>
 #include <poll.h>
 
+/*
+polldispatch模块的总结
+1.初始化函数，开空间,poll需要的额外数组，然然初始化到-1.
+2.channel里面的文件描述符，是否需要添加到反应堆里面去的。
+3.channel里面的文件描述符，从反应堆删除
+4.channel里面的文件描述符，修改读书事件的
+5.检查事件
+6.删除刚才开辟的空间
+*/
+
 // Dispatcher 是底层事件检测机制的抽象接口；
 // EventLoop 是上层事件循环对象，它通过 Dispatcher 去管理和分发 fd 事件
 

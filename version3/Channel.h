@@ -1,5 +1,15 @@
 #pragma once
 #include <stdbool.h>
+
+/*
+ Channel模块总结
+ 1.封装文件描述符
+ 2.对文件描述符的读写事件，已经读写事件需要的参数
+ 3.1初始化函数，开空间存放数据，然后返回给调用者
+ 3.2判断是否需要检测事件
+ 3.3是否需要检测文件描述符的写事件
+ */
+
 // 1.函数指针
 typedef int(*handleFunc)(void* arg);
 
@@ -29,6 +39,8 @@ struct Channel
 struct Channel* channelInit(int fd, int events, handleFunc reaFunc, handleFunc writeFunc, void* arg);
 
 // 2.修改fd的写事件(检测，或者不被检查)
+// flag==true  获取读事件
+// flag==false 删除读事件
 void writeEventEnable(struct Channel* channel, bool flag);
 
 // 3.判断是否需要检查文件描述符的写事件
@@ -38,3 +50,5 @@ bool isWriteEventEnable(struct Channel* channel);
 // channel->events |= WriteEvent;      // 开启写事件
 // channel->events &= ~WriteEvent;     // 关闭写事件
 // channel->events & WriteEvent;       // 判断写事件
+
+
