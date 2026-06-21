@@ -4,6 +4,13 @@
 #include <stdlib.h>
 #include <sys/epoll.h>
 
+/*
+EpollDispatcher模块的总结
+1.申请内存，存放epoll的句柄和epoll需要的数组。
+2.
+
+ */
+
 // Dispatcher 是底层事件检测机制的抽象接口；
 // EventLoop 是上层事件循环对象，它通过 Dispatcher 去管理和分发 fd 事件
 
@@ -62,6 +69,35 @@ static void* epollinit()
   
   // 4.epoll句柄和对应的数组返回的。
   return data;
+}
+
+// 4.事件的检测
+static int epolldispatch(struct EventLoop* evloop, int timeout)
+{
+  struct EpollData* data = (struct EpollData*)evloop->dispatcherdata;
+  
+  int count = epoll_wait(data->epfd, data->events, Max, timeout * 1000);
+  for(int i = 0; i < count; i++)
+  {
+    int events = data->events[i].events;
+    int fd = data->events[i].data.fd;
+
+    if(events & EPOLLERR || events &  EPOLLHUP)
+    {
+      continue;
+    }
+
+    // 事件的激活
+    if(events & EPOLLIN)
+    {
+      eventActivate(evloop, fd, ReadEvent);
+    }
+    if(events & EPOLLOUT)
+    {
+      eventActivate(evloop, fd, WriteEvent);
+    }
+  }
+  return 0;
 }
 
 static int epollCtl(struct Channel* channel, struct EventLoop* evloop, int op)
@@ -125,35 +161,6 @@ static int epollmodify(struct Channel* channel, struct EventLoop* evloop)
   return ret;
 }
 
-// 4.事件的检测
-static int epolldispatch(struct EventLoop* evloop, int timeout)
-{
-  struct EpollData* data = (struct EpollData*)evloop->dispatcherdata;
-  
-  int count = epoll_wait(data->epfd, data->events, Max, timeout * 1000);
-  for(int i = 0; i < count; i++)
-  {
-    int events = data->events[i].events;
-    int fd = data->events[i].data.fd;
-
-    if(events & EPOLLERR || events &  EPOLLHUP)
-    {
-      continue;
-    }
-
-    // 事件的激活
-    if(events & EPOLLIN)
-    {
-      eventActivate(evloop, fd, ReadEvent);
-    }
-    if(events & EPOLLOUT)
-    {
-      eventActivate(evloop, fd, WriteEvent);
-    }
-  }
-
-  return 0;
-}
  //6.关闭文件描述符
 static int epollclear(struct EventLoop* evloop)
 {

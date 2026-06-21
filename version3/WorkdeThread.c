@@ -27,6 +27,7 @@ void* subThreadRunning(void* arg)
 
   pthread_cond_signal(&thread->cond);
 
+// 根据实例启动模型
   eventLoopRun(thread->evLoop);
 
   return thread;

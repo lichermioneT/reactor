@@ -1,4 +1,5 @@
 #include "TcpServer.h"
+#include "TcpConnection.h"
 #include <sys/socket.h>
 #include <stdio.h>
 #include <arpa/inet.h>
@@ -65,10 +66,11 @@ int acceptConnection(void* arg)
   struct TcpServer* tcpServer = (struct TcpServer*)arg;
   
   int cfd = accept(tcpServer->listener->lfd, NULL, NULL);
-  // 从线程池里面取一个子线程的反应堆模型
+
+  // 从线程池里面取一个子线程的反应堆模型，处理cfd
   struct EventLoop* evLoop = takeWorkerEventLoop(tcpServer->threadPool);
 
-  
+  tcpConnectionInit(cfd, evLoop); 
 }
 
 void TcpServerRun(struct TcpServer* server)
@@ -81,5 +83,6 @@ void TcpServerRun(struct TcpServer* server)
 
   // 添加检查任务
   eventLoopAddTask(server->mainLoop, channel, ADD);
+  // 启动反应堆模型
   eventLoopRun(server->mainLoop);
 }
