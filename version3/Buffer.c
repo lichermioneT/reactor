@@ -134,3 +134,11 @@ int bufferSocketRead(struct Buffer* buffer, int fd)
 
   return result;
 }
+
+char* bufferFindCRLF(struct Buffer* buffer)
+{
+  // strstr:大字符匹配小字符串
+  // memmem:大数据块匹配小数据块
+  char* ptr = (char*)memmem(buffer->data + buffer->readPos, bufferReadableSize(buffer), "\r\n", 2); 
+  return ptr;
+}

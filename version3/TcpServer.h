@@ -16,9 +16,10 @@ struct TcpServer
   struct Listener* listener;     // 监听的文件描述符和端口
 };
 
-// 初始化
-struct TcpServer* tcpServerInit(unsigned short port, int threadNum);
 // 初始化监听
 struct Listener* listenerInit(unsigned short port);
+
+// 初始化
+struct TcpServer* tcpServerInit(unsigned short port, int threadNum);
 // 启动服务器
 void TcpServerRun(struct TcpServer* server);
