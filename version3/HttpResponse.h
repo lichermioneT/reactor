@@ -24,10 +24,12 @@ struct HttpRespone
 // 状态行：状态码 状态描述 版本
   enum HttpStatusCode statusCode;
   char statusMsg[128];
+  char fileName[128];
 // 响应头：键值对
   struct ResponseHeader* headers;
   int headerNum;
   responseBody sendDataFunc;
+
 };
 
 // 初始化
@@ -36,4 +38,6 @@ struct HttpRespone* httResponseInit();
 void  httpResponeDestory(struct HttpRespone* respone);
 // 添加响应头
 void httpsResponeAddHeader(struct HttpRespone* respone, const char* key, const char* value);
+// 组织http响应
+void httpResponsePrepareMsg(struct HttpRespone* respone, struct Buffer* sendBuf, int socket);
 
