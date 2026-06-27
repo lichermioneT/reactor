@@ -54,7 +54,8 @@ struct EventLoop* takeWorkerEventLoop(struct ThreadPool* pool)
   if(pool->threadNum > 0)
   {
     evLoop = pool->workerThreads[pool->index].evLoop;
-    pool->index = ++pool->index % pool->threadNum;
+    // pool->index = ++pool->index % pool->threadNum;
+    pool->index = (pool->index + 1) % pool->threadNum;
   }
     
   // 返回

@@ -1,5 +1,7 @@
 #include "Dispatcher.h"
-#include<unistd.h>
+#include "EventLoop.h"
+#include "Channel.h"
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/select.h>
@@ -28,6 +30,13 @@ selectdispatch模块的总结
 // Dispatcher 是底层事件检测机制的抽象接口；
 // EventLoop 是上层事件循环对象，它通过 Dispatcher 去管理和分发 fd 事件
 
+#define Max 1024
+struct SelectData
+{
+  fd_set readSet;
+  fd_set writeSet;
+};
+
 // 静态函数的声明
 // 1.初始化数据块的。eselect,select,select。返回值兼容三种数据类型的。
 static void* selectinit(); 
@@ -55,13 +64,6 @@ struct Dispatcher SelectDispatcher =
   selectmodify,
   selectdispatch,
   selectclear,
-};
-
-#define Max 1024
-struct SelectData
-{
-  fd_set readSet;
-  fd_set writeSet;
 };
 
 static void setFdSet(struct Channel* channel, struct SelectData* data)
@@ -128,6 +130,8 @@ static int selectremove(struct Channel* channel, struct EventLoop* evloop)
   // 2.清除事件的读写事件
   clearFdSet(channel, data);
 
+  channel->destoryCallback(channel->arg);
+
   return 0;
 }
 
@@ -136,8 +140,8 @@ static int selectmodify(struct Channel* channel, struct EventLoop* evloop)
 {
   // 1.EventLoop里面的dispatcherdata里面拿数据的。
   struct SelectData* data = (struct SelectData*)evloop->dispatcherdata;
-  setFdSet(channel, data);
   clearFdSet(channel, data);
+  setFdSet(channel, data);
 
   return 0;
 }

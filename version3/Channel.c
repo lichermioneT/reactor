@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 // 1.开空间，初始化数据的
-struct Channel* channelInit(int fd, int events, handleFunc reaFunc, handleFunc writeFunc, void* arg)
+struct Channel* channelInit(int fd, int events, handleFunc reaFunc, handleFunc writeFunc, handleFunc destoryCallback, void* arg)
 {
   // 1.申请内存
   struct Channel* data = (struct Channel*)malloc(sizeof(struct Channel));
@@ -18,6 +18,7 @@ struct Channel* channelInit(int fd, int events, handleFunc reaFunc, handleFunc w
   data->events = events;
   data->readCallback = reaFunc;
   data->writeCallback = writeFunc;
+  data->destoryCallback = destoryCallback;
   // 读写函数需要的参数
   data->arg = arg;
   

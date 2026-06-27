@@ -59,7 +59,9 @@ void httpResponsePrepareMsg(struct HttpRespone* respone, struct Buffer* sendBuf,
     sprintf(tmp, "%s: %s\r\n", respone->headers[i].key, respone->headers[i].value);
   }
   bufferAppendString(sendBuf, tmp);
-
+#ifndef MSG_SEND_AUTO
+  bufferSendData(sendBuf, socket);
+#endif
   // 空行
   bufferAppendString(sendBuf, "\r\n");
   // 回复的数据

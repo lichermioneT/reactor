@@ -1,5 +1,7 @@
 #include "Dispatcher.h"
-#include<unistd.h>
+#include "EventLoop.h"
+#include "Channel.h"
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/epoll.h>
@@ -146,6 +148,8 @@ static int epollremove(struct Channel* channel, struct EventLoop* evloop)
     perror("EPOLL_CTL_DEL");
     exit(0);
   }
+
+  channel->destoryCallback(channel->arg);
   return ret;
 }
 

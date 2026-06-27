@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "HttpRequest.h"
 #include <sys/sendfile.h>
 #include <unistd.h>
@@ -389,7 +391,7 @@ const char* getFileType(const char* name)
   return "text/plain; charset=utf-8";
 }
 
-void sendDir(const char* dirName,struct Buffer* sendBuf, int cfd)
+int sendDir(const char* dirName,struct Buffer* sendBuf, int cfd)
 {
     char buf[4096] = { 0 };
     sprintf(buf, "<html><head><title>%s</title></head><body><table>", dirName);
@@ -418,13 +420,20 @@ void sendDir(const char* dirName,struct Buffer* sendBuf, int cfd)
         }
         // send(cfd, buf, strlen(buf), 0);
         bufferAppendString(sendBuf, buf);
+#ifndef MSG_SEND_AUTO
+        bufferSendData(sendBuf, cfd);
+#endif
         memset(buf, 0, sizeof(buf));
         free(namelist[i]);
     }
     sprintf(buf, "</table></body></html>");
     // send(cfd, buf, strlen(buf), 0);
     bufferAppendString(sendBuf, buf);
+#ifndef MSG_SEND_AUTO
+    bufferSendData(sendBuf, cfd);
+#endif
     free(namelist);
+    return 0;
 }
 
 int sendFile(const char* fileName, struct Buffer* sendBuf, int cfd)
@@ -442,6 +451,9 @@ int sendFile(const char* fileName, struct Buffer* sendBuf, int cfd)
     {
       // send(cfd, buf, len, 0);
       bufferAppendData(sendBuf, buf, len);
+#ifndef MSG_SEND_AUTO
+      bufferSendData(sendBuf, cfd);
+#endif
       usleep(10); // 这非常重要的。浏览器需要解析时间的。
     }
     else if(len == 0)
@@ -468,4 +480,3 @@ int sendFile(const char* fileName, struct Buffer* sendBuf, int cfd)
   close(fd);
   return 0;
 }
-

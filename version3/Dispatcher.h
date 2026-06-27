@@ -1,7 +1,7 @@
 #pragma once 
-#include "EventLoop.h"
-#include "Channel.h"
 
+struct Channel;
+struct EventLoop;
 /*
 Dispatcher模块的总结
 这里主要是六个函数指针的封装

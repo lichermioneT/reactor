@@ -17,7 +17,7 @@ struct ResponseHeader
   char value[128];
 };
 
-typedef void(*responseBody)(const char* fileName, struct Buffer* snedBuf, int socket);
+typedef int(*responseBody)(const char* fileName, struct Buffer* snedBuf, int socket);
 
 struct HttpRespone 
 {

@@ -30,13 +30,15 @@ struct Channel
   //3.处理事件对应的函数
   handleFunc readCallback;
   handleFunc writeCallback;
+
+  handleFunc destoryCallback;
   
   //4.事件处理函数，对应的参数(不清楚，设置为泛型)
   void* arg;
 };
 
 // 1.初始化一个Channel,开空间存放数据
-struct Channel* channelInit(int fd, int events, handleFunc reaFunc, handleFunc writeFunc, void* arg);
+struct Channel* channelInit(int fd, int events, handleFunc reaFunc, handleFunc writeFunc, handleFunc destoryCallback, void* arg);
 
 // 2.修改fd的写事件(检测，或者不被检查)
 // flag==true  获取读事件

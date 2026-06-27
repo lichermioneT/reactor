@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include "TcpServer.h"
 
 int main(int argc, char* argv[])
 {
@@ -12,6 +13,9 @@ int main(int argc, char* argv[])
 
   unsigned short port = atoi(argv[1]);
   chdir(argv[2]);
+
+  struct TcpServer* server = tcpServerInit(port, 4);
+  TcpServerRun(server);
 
   return 0;
 }

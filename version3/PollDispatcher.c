@@ -1,5 +1,8 @@
 #include "Dispatcher.h"
-#include<unistd.h>
+#include "EventLoop.h"
+#include "Channel.h"
+
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <poll.h>
@@ -51,7 +54,7 @@ struct PollData
 
 
 // 初始化epoll需要的数据
-static void* epollinit()
+static void* pollinit()
 {
   // 1.开辟堆空间，存放poll需要的数据
   struct PollData* data = (struct PollData*)malloc(sizeof(struct PollData));
@@ -89,7 +92,7 @@ static int polladd(struct Channel* channel, struct EventLoop* evloop)
   int i = 0;
   for(; i < Max; ++i)
   {
-    if(data->fds[i].fd == 1)
+    if(data->fds[i].fd == -1)
     {
       data->fds[i].events = events;
       data->fds[i].fd = channel->fd;
@@ -124,6 +127,9 @@ static int pollremove(struct Channel* channel, struct EventLoop* evloop)
       break;
     }
   }
+  
+  // 
+  channel->destoryCallback(channel->arg);
 
   if(i >= Max)
   {
@@ -134,7 +140,7 @@ static int pollremove(struct Channel* channel, struct EventLoop* evloop)
 }
 
 // 3.修改
-static int epollmodify(struct Channel* channel, struct EventLoop* evloop)
+static int pollmodify(struct Channel* channel, struct EventLoop* evloop)
 {
   // 1.EventLoop里面的dispatcherdata里面拿数据的。
   struct PollData* data = (struct PollData*)evloop->dispatcherdata;
@@ -169,7 +175,7 @@ static int epollmodify(struct Channel* channel, struct EventLoop* evloop)
 }
 
 // 4.事件的检测
-static int epolldispatch(struct EventLoop* evloop, int timeout)
+static int polldispatch(struct EventLoop* evloop, int timeout)
 {
   struct PollData* data = (struct PollData*)evloop->dispatcherdata;
   
@@ -188,7 +194,7 @@ static int epolldispatch(struct EventLoop* evloop, int timeout)
     }
 
     // 激活读写事件的
-    if(data->fds[i].revents * POLLIN)
+    if(data->fds[i].revents & POLLIN)
     {
         eventActivate(evloop, data->fds[i].fd, ReadEvent);
     }
@@ -196,7 +202,6 @@ static int epolldispatch(struct EventLoop* evloop, int timeout)
     {
         eventActivate(evloop, data->fds[i].fd, WriteEvent);
     }
-
   }
 
   return 0;

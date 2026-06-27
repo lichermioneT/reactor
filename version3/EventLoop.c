@@ -1,6 +1,7 @@
 #include "EventLoop.h"
+#include "Channel.h"
+
 #include <unistd.h>
-#include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,7 +74,7 @@ struct EventLoop* EventLoopInitEx(const char* threadName)
   }
 
 // 6.这里注册一个环形的fd，只是关系它的读事件
-  struct Channel* channel = channelInit(evLoop->socketPair[1], ReadEvent, readLocalMessage, NULL, evLoop);
+  struct Channel* channel = channelInit(evLoop->socketPair[1], ReadEvent, readLocalMessage, NULL, NULL, evLoop);
   
 // 7.添加到队列里面去
   eventLoopAddTask(evLoop, channel, ADD);

@@ -59,5 +59,5 @@ bool processHttpRequest(struct HttpRequest* request, struct HttpRespone* respone
 void decodeMsg(char* to, char* from);
 int hexToDec(char c);
 const char* getFileType(const char* name);
-int sendDir(const char* dirName, int cfd);
-int sendFile(const char* fileName, int cfd);
+int sendDir(const char* dirName, struct Buffer* buffer,int cfd);
+int sendFile(const char* fileName, struct Buffer* buffer, int cfd);

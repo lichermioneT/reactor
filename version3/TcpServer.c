@@ -56,6 +56,7 @@ struct TcpServer* tcpServerInit(unsigned short port, int threadNum)
 {
   struct TcpServer* tcpServer = (struct TcpServer*)malloc(sizeof(struct TcpServer)); // 开空间
   tcpServer->listener = listenerInit(port); // 需要监听的端口
+
   tcpServer->mainLoop = EventLoopInit(); // 主线程的反应堆 示例的初始化。
   tcpServer->threadNum = threadNum;   // 线程池的线程个数
   tcpServer->threadPool = threadPollInit(tcpServer->mainLoop, threadNum); // 线程池
@@ -83,7 +84,7 @@ void TcpServerRun(struct TcpServer* server)
   threadPoolRun(server->threadPool);
   
 // 初始化一个channel示例,这里就是监听的文件描述符
-  struct Channel* channel = channelInit(server->listener->lfd, ReadEvent, acceptConnection, NULL, server);
+  struct Channel* channel = channelInit(server->listener->lfd, ReadEvent, acceptConnection, NULL, NULL,server);
 
   // 添加检查任务,主线程的反应堆模型。
   // 添加到反应堆里面，主线程的反应堆模型

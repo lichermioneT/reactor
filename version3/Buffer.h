@@ -24,3 +24,5 @@ int bufferAppendString(struct Buffer* buffer, const char* data);
 int bufferSocketRead(struct Buffer* buffer, int fd);
 // 5.根据\r\n
 char* bufferFindCRLF(struct Buffer* buffer);
+
+int bufferSendData(struct Buffer* buffer, int socket);

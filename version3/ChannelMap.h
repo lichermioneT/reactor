@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 /*
 ChannelMap模块总结
 1.主要是一个指针数据，用来存放channel的

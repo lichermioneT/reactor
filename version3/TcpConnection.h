@@ -2,6 +2,10 @@
 #include "EventLoop.h"
 #include "Buffer.h"
 #include "Channel.h"
+#include "HttpResponse.h"
+#include "HttpRequest.h"
+
+// #define MSG_SEND_AUTO
 
 struct TcpConnection 
 {
@@ -10,7 +14,10 @@ struct TcpConnection
   struct Buffer* readBuf;
   struct Buffer* writeBuf;
   char name[32];
+  struct HttpRequest* request;
+  struct HttpRespone* response;
 };
 
 // 初始化
 struct TcpConnection* tcpConnectionInit(int fd,  struct EventLoop* evloop);
+int tcpConnectionDestory(void* arg);

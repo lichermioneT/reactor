@@ -17,9 +17,11 @@ struct TcpServer
 };
 
 // 初始化监听
+// 监听的端口和用于监听的文件描述符
 struct Listener* listenerInit(unsigned short port);
 
-// 初始化
+// 初始化1.监听的信息
+// 2.主线程的反应堆和线程池
 struct TcpServer* tcpServerInit(unsigned short port, int threadNum);
 // 启动服务器
 void TcpServerRun(struct TcpServer* server);
