@@ -1,6 +1,6 @@
 #include "Dispatcher.h"
 
-Dispatcher::Dispatcher(EventLoop* evloop) : m_evLoop(evloop)
+Dispatcher::Dispatcher(EventLoop* evloop) : _evLoop(evloop)
 {
 }
 
@@ -23,7 +23,7 @@ int Dispatcher::modify()
     return 0;
 }
 
-int Dispatcher::dispatch(int timeout)
+int Dispatcher::dispatch(int)
 {
     return 0;
 }

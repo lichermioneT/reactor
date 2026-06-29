@@ -29,6 +29,7 @@ static int readLocalMessage(void* arg)
   return 0;
 }
 
+// 主线程的初始化
 struct EventLoop* EventLoopInit()
 {
   return EventLoopInitEx(NULL);
@@ -36,6 +37,7 @@ struct EventLoop* EventLoopInit()
 
 struct EventLoop* EventLoopInitEx(const char* threadName)
 {
+// 1.开空间
   struct EventLoop* evLoop = (struct EventLoop*)malloc(sizeof(struct EventLoop));
   if(evLoop == NULL)
   {
@@ -43,8 +45,10 @@ struct EventLoop* EventLoopInitEx(const char* threadName)
     return NULL;
   }
 
+// 2.初始化数据
   evLoop->isQuit = false;
-  evLoop->dispatcher = &EpollDispatcher;
+  // 2.1这里选择的是epoll模型
+  evLoop->dispatcher = &EpollDispatcher; 
   evLoop->dispatcherdata = NULL;
   evLoop->head = NULL;
   evLoop->tail = NULL;
@@ -56,7 +60,8 @@ struct EventLoop* EventLoopInitEx(const char* threadName)
   snprintf(evLoop->threadName, sizeof(evLoop->threadName), "%s",
            threadName == NULL ? "main thread" : threadName);
 
-  evLoop->dispatcherdata = evLoop->dispatcher->init();
+  // 2.2 epoll的句柄和辅助数组
+  evLoop->dispatcherdata = evLoop->dispatcher->init(); 
   evLoop->channelMap = channelMapInit(128);
   if(evLoop->dispatcherdata == NULL || evLoop->channelMap == NULL)
   {
@@ -82,10 +87,14 @@ struct EventLoop* EventLoopInitEx(const char* threadName)
     return NULL;
   }
 
+// 3.需要唤醒的文件描述符添加到 任务队列里面去的
   eventLoopAddTask(evLoop, channel, ADD);
+
+// 4.返还给调用者
   return evLoop;
 }
 
+// 反应堆模型启动，这里需要告诉我那个模型启动的。
 int eventLoopRun(struct EventLoop* evLoop)
 {
   assert(evLoop != NULL);
@@ -95,10 +104,13 @@ int eventLoopRun(struct EventLoop* evLoop)
     return -1;
   }
 
+// 1.反应堆里面拿出IO复用的模型
   struct Dispatcher* dispatcher = evLoop->dispatcher;
   while(!evLoop->isQuit)
   {
+    // 1.1启动监听了
     dispatcher->dispatch(evLoop, 2);
+    // 1.2遍历任务队列，然后增删查改
     eventLoopProcessTask(evLoop);
   }
 
@@ -121,16 +133,17 @@ int eventActivate(struct EventLoop* evLoop, int fd, int event)
 
   if((event & ReadEvent) && channel->readCallback != NULL)
   {
-    channel->readCallback(channel->arg);
+    channel->readCallback(channel->arg); // 监听文件描述符的读事件
   }
   if((event & WriteEvent) && channel->writeCallback != NULL)
   {
-    channel->writeCallback(channel->arg);
+    channel->writeCallback(channel->arg); // 通信文件描述符的写事件。
   }
 
   return 0;
 }
 
+// 添加到任务队列里面去
 int eventLoopAddTask(struct EventLoop* evLoop, struct Channel* channel, int type)
 {
   if(evLoop == NULL || channel == NULL)
@@ -138,8 +151,7 @@ int eventLoopAddTask(struct EventLoop* evLoop, struct Channel* channel, int type
     return -1;
   }
 
-  struct ChannelElement* node =
-      (struct ChannelElement*)malloc(sizeof(struct ChannelElement));
+  struct ChannelElement* node = (struct ChannelElement*)malloc(sizeof(struct ChannelElement));
   if(node == NULL)
   {
     perror("malloc");
@@ -175,6 +187,8 @@ int eventLoopAddTask(struct EventLoop* evLoop, struct Channel* channel, int type
   return 0;
 }
 
+// 遍历任务队列
+// ADD,DELETE,MODIFY
 int eventLoopProcessTask(struct EventLoop* evLoop)
 {
   if(evLoop == NULL)
@@ -278,6 +292,7 @@ int eventLoopModify(struct EventLoop* evLoop, struct Channel* channel)
   return evLoop->dispatcher->modify(channel, evLoop);
 }
 
+
 int destroyChannel(struct EventLoop* evLoop, struct Channel* channel)
 {
   if(evLoop == NULL || channel == NULL)
@@ -288,10 +303,13 @@ int destroyChannel(struct EventLoop* evLoop, struct Channel* channel)
   if(evLoop->channelMap != NULL && channel->fd >= 0 &&
      channel->fd < evLoop->channelMap->size)
   {
+// 1.指针数组的指针变成NULL
     evLoop->channelMap->list[channel->fd] = NULL;
   }
 
+// 2.关闭文件描述符
   close(channel->fd);
+// 3.释放空间
   free(channel);
   return 0;
 }

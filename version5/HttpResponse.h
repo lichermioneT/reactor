@@ -1,7 +1,8 @@
 #pragma once
 #include "Buffer.h"
-#include <map>
 #include <functional>
+#include <map>
+#include <string>
 using namespace std;
 
 // 定义状态码枚举
@@ -21,27 +22,27 @@ class HttpResponse
 public:
     HttpResponse();
     ~HttpResponse();
-    function<void(const string, struct Buffer*, int)> sendDataFunc;
+    function<void(const string&, struct Buffer*, int)> sendDataFunc;
     // 添加响应头
     void addHeader(const string key, const string value);
     // 组织http响应数据
     void prepareMsg(Buffer* sendBuf, int socket);
     inline void setFileName(string name)
     {
-        m_fileName = name;
+        _fileName = name;
     }
     inline void setStatusCode(StatusCode code)
     {
-        m_statusCode = code;
+        _statusCode = code;
     }
 private:
     // 状态行: 状态码, 状态描述
-    StatusCode m_statusCode;
-    string m_fileName;
+    StatusCode _statusCode;
+    string _fileName;
     // 响应头 - 键值对
-    map<string, string> m_headers;
+    map<string, string> _headers;
     // 定义状态码和描述的对应关系
-    const map<int, string> m_info = {
+    const map<int, string> _info = {
         {200, "OK"},
         {301, "MovedPermanently"},
         {302, "MovedTemporarily"},

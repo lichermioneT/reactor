@@ -21,7 +21,7 @@ public:
     int dispatch(int timeout = 2) override; // 单位: s
 
 private:
-    int m_maxfd;
-    struct pollfd *m_fds;
-    const int m_maxNode = 1024;
+    int _maxfd;
+    struct pollfd *_fds;
+    const int _maxNode = 1024;
 };

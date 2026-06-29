@@ -1,6 +1,6 @@
 #pragma once
-#include "Dispatcher.h"
 #include "Channel.h"
+#include <string>
 #include <thread>
 #include <queue>
 #include <map>
@@ -12,8 +12,8 @@ enum class ElemType:char{ADD, DELETE, MODIFY};
 // 定义任务队列的节点
 struct ChannelElement
 {
-    ElemType type;   // 如何处理该节点中的channel
-    Channel* channel;
+    ElemType _type;   // 如何处理该节点中的channel
+    Channel* _channel;
 };
 class Dispatcher;
 
@@ -41,11 +41,11 @@ public:
     // 返回线程ID
     inline thread::id getThreadID()
     {
-        return m_threadID;
+        return _threadID;
     }
     inline string getThreadName()
     {
-        return m_threadName;
+        return _threadName;
     }
     static int readLocalMessage(void* arg);
 
@@ -53,18 +53,18 @@ private:
     void taskWakeup();
 
 private:
-    bool m_isQuit;
+    bool _isQuit;
     // 该指针指向子类的实例 epoll, poll, select
-    Dispatcher* m_dispatcher;
+    Dispatcher* _dispatcher;
     // 任务队列
-    queue<ChannelElement*> m_taskQ;
+    queue<ChannelElement*> _taskQ;
     // map
-    map<int, Channel*> m_channelMap;
+    map<int, Channel*> _channelMap;
     // 线程id, name, mutex
-    thread::id m_threadID;
-    string m_threadName;
-    mutex m_mutex;
-    int m_socketPair[2];  // 存储本地通信的fd 通过socketpair 初始化
+    thread::id _threadID;
+    string _threadName;
+    mutex _mutex;
+    int _socketPair[2];  // 存储本地通信的fd 通过socketpair 初始化
 };
 
 

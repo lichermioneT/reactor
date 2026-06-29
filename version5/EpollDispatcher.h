@@ -24,7 +24,7 @@ private:
     int epollCtl(int op);
 
 private:
-    int m_epfd;
-    struct epoll_event* m_events;
-    const int m_maxNode = 520;
+    int _epfd;
+    struct epoll_event* _events;
+    const int _maxNode = 520;
 };

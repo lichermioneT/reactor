@@ -3,28 +3,28 @@
 
 Channel::Channel(int fd, FDEvent events, handleFunc readFunc, handleFunc writeFunc, handleFunc destroyFunc, void* arg)
 {
-    m_arg = arg;
-    m_fd = fd;
-    m_events = (int)events;
-    readCallback = readFunc;
-    writeCallback = writeFunc;
-    destroyCallback = destroyFunc;
+    _arg = arg;
+    _fd = fd;
+    _events = (int)events;
+    _readCallback = readFunc;
+    _writeCallback = writeFunc;
+    _destroyCallback = destroyFunc;
 }
 
 void Channel::writeEventEnable(bool flag)
 {
     if (flag)
     {
-        // m_events |= (int)FDEvent::WriteEvent;
-        m_events |= static_cast<int>(FDEvent::WriteEvent);
+        // _events |= (int)FDEvent::WriteEvent;
+        _events |= static_cast<int>(FDEvent::WriteEvent);
     }
     else
     {
-        m_events = m_events & ~(int)FDEvent::WriteEvent;
+        _events = _events & ~(int)FDEvent::WriteEvent;
     }
 }
 
 bool Channel::isWriteEventEnable()
 {
-    return m_events & (int)FDEvent::WriteEvent;
+    return (_events & (int)FDEvent::WriteEvent) != 0;
 }

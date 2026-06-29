@@ -113,8 +113,7 @@ struct TcpConnection* tcpConnectionInit(int fd, struct EventLoop* evloop)
     return NULL;
   }
 
-// 3.监听文件免费添加到反应堆模型
+// 3.监听文件添加到反应堆模型
   eventLoopAddTask(evloop, conn->channel, ADD);
   return conn;
 }
-

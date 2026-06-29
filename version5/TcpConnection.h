@@ -17,12 +17,12 @@ public:
     static int processWrite(void* arg);
     static int destroy(void* arg);
 private:
-    string m_name;
-    EventLoop* m_evLoop;
-    Channel* m_channel;
-    Buffer* m_readBuf;
-    Buffer* m_writeBuf;
+    string _name;
+    EventLoop* _evLoop;
+    Channel* _channel;
+    Buffer* _readBuf;
+    Buffer* _writeBuf;
     // http 协议
-    HttpRequest* m_request;
-    HttpResponse* m_response;
+    HttpRequest* _request;
+    HttpResponse* _response;
 };

@@ -2,7 +2,9 @@
 #include "Buffer.h"
 #include <stdbool.h>
 #include "HttpResponse.h"
+#include <functional>
 #include <map>
+#include <string>
 using namespace std;
 
 // 当前的解析状态
@@ -34,30 +36,30 @@ public:
     // 处理http请求协议
     bool processHttpRequest(HttpResponse* response);
     // 解码字符串
-    string decodeMsg(string from);
-    const string getFileType(const string name);
-    static void sendDir(string dirName, Buffer* sendBuf, int cfd);
-    static void sendFile(string dirName, Buffer* sendBuf, int cfd);
+    string decodeMsg(const string& from);
+    const string getFileType(const string& name);
+    static void sendDir(const string& dirName, Buffer* sendBuf, int cfd);
+    static void sendFile(const string& fileName, Buffer* sendBuf, int cfd);
     inline void setMethod(string method)
     {
-        m_method = method;
+        _method = method;
     }
     inline void seturl(string url)
     {
-        m_url = url;
+        _url = url;
     }
     inline void setVersion(string version)
     {
-        m_version = version;
+        _version = version;
     }
     // 获取处理状态
     inline PrecessState getState()
     {
-        return m_curState;
+        return _curState;
     }
     inline void setState(PrecessState state)
     {
-        m_curState = state;
+        _curState = state;
     }
 
 private:
@@ -66,10 +68,10 @@ private:
     int hexToDec(char c);
 
 private:
-    string m_method;
-    string m_url;
-    string m_version;
-    map<string, string> m_reqHeaders;
-    PrecessState m_curState;
+    string _method;
+    string _url;
+    string _version;
+    map<string, string> _reqHeaders;
+    PrecessState _curState;
 };
 

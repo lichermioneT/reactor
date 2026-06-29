@@ -1,4 +1,6 @@
-//#define _GNU_SOURCE
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
 #include "HttpRequest.h"
 #include <stdio.h>
 #include <strings.h>
@@ -14,15 +16,22 @@
 
 char* HttpRequest::splitRequestLine(const char* start, const char* end, const char* sub, function<void(string)> callback)
 {
+    if (start == nullptr || end == nullptr || start > end)
+    {
+        return nullptr;
+    }
     char* space = const_cast<char*>(end);
     if (sub != nullptr)
     {
         space = static_cast<char*>(memmem(start, end - start, sub, strlen(sub)));
-        assert(space != nullptr);
+        if (space == nullptr)
+        {
+            return nullptr;
+        }
     }
     int length = space - start;
     callback(string(start, length));
-    return space + 1;
+    return sub == nullptr ? space : space + strlen(sub);
 }
 
 
@@ -50,9 +59,9 @@ HttpRequest::~HttpRequest()
 
 void HttpRequest::reset()
 {
-    m_curState = PrecessState::ParseReqLine;
-    m_method = m_url = m_version = string(); // ""
-    m_reqHeaders.clear();
+    _curState = PrecessState::ParseReqLine;
+    _method = _url = _version = string(); // ""
+    _reqHeaders.clear();
 }
 
 void HttpRequest::addHeader(const string key, const string value)
@@ -61,13 +70,13 @@ void HttpRequest::addHeader(const string key, const string value)
     {
         return;
     }
-    m_reqHeaders.insert(make_pair(key, value));
+    _reqHeaders.insert(make_pair(key, value));
 }
 
 string HttpRequest::getHeader(const string key)
 {
-    auto item = m_reqHeaders.find(key);
-    if (item == m_reqHeaders.end())
+    auto item = _reqHeaders.find(key);
+    if (item == _reqHeaders.end())
     {
         return string();
     }
@@ -78,6 +87,10 @@ bool HttpRequest::parseRequestLine(Buffer* readBuf)
 {
     // 读出请求行, 保存字符串结束地址
     char* end = readBuf->findCRLF();
+    if (end == nullptr)
+    {
+        return false;
+    }
     // 保存字符串起始地址
     char* start = readBuf->data();
     // 请求行总长度
@@ -87,10 +100,21 @@ bool HttpRequest::parseRequestLine(Buffer* readBuf)
     {
         auto methodFunc = bind(&HttpRequest::setMethod, this, placeholders::_1);
         start = splitRequestLine(start, end, " ", methodFunc);
+        if (start == nullptr)
+        {
+            return false;
+        }
         auto urlFunc = bind(&HttpRequest::seturl, this, placeholders::_1);
         start = splitRequestLine(start, end, " ", urlFunc);
+        if (start == nullptr)
+        {
+            return false;
+        }
         auto versionFunc = bind(&HttpRequest::setVersion, this, placeholders::_1);
-        splitRequestLine(start, end, nullptr, versionFunc);
+        if (splitRequestLine(start, end, nullptr, versionFunc) == nullptr)
+        {
+            return false;
+        }
         // 为解析请求头做准备
         readBuf->readPosIncrease(lineSize + 2);
         // 修改状态
@@ -138,9 +162,9 @@ bool HttpRequest::parseRequestHeader(Buffer* readBuf)
 bool HttpRequest::parseHttpRequest(Buffer* readBuf, HttpResponse* response, Buffer* sendBuf, int socket)
 {
     bool flag = true;
-    while (m_curState != PrecessState::ParseReqDone)
+    while (_curState != PrecessState::ParseReqDone)
     {
-        switch (m_curState)
+        switch (_curState)
         {
         case PrecessState::ParseReqLine:
             flag = parseRequestLine(readBuf);
@@ -155,37 +179,37 @@ bool HttpRequest::parseHttpRequest(Buffer* readBuf, HttpResponse* response, Buff
         }
         if (!flag)
         {
-            return flag;
+            return false;
         }
-        // 判断是否解析完毕了, 如果完毕了, 需要准备回复的数据
-        if (m_curState == PrecessState::ParseReqDone)
+        if (_curState == PrecessState::ParseReqDone)
         {
-            // 1. 根据解析出的原始数据, 对客户端的请求做出处理
-            processHttpRequest(response);
-            // 2. 组织响应数据并发送给客户端
+            if (!processHttpRequest(response))
+            {
+                return false;
+            }
             response->prepareMsg(sendBuf, socket);
         }
     }
-    m_curState = PrecessState::ParseReqLine;   // 状态还原, 保证还能继续处理第二条及以后的请求
+    reset();
     return flag;
 }
 
 bool HttpRequest::processHttpRequest(HttpResponse* response)
 {
-    if (strcasecmp(m_method.data(), "get") != 0)
+    if (strcasecmp(_method.c_str(), "get") != 0)
     {
-        return -1;
+        return false;
     }
-    m_url = decodeMsg(m_url);
+    _url = decodeMsg(_url);
     // 处理客户端请求的静态资源(目录或者文件)
     const char* file = NULL;
-    if (strcmp(m_url.data(), "/") == 0)
+    if (strcmp(_url.c_str(), "/") == 0)
     {
         file = "./";
     }
     else
     {
-        file = m_url.data() + 1;
+        file = _url.c_str() + 1;
     }
     // 获取文件属性
     struct stat st;
@@ -200,7 +224,7 @@ bool HttpRequest::processHttpRequest(HttpResponse* response)
         // 响应头
         response->addHeader("Content-type", getFileType(".html"));
         response->sendDataFunc = sendFile;
-        return 0;
+        return true;
     }
 
     response->setFileName(file);
@@ -226,13 +250,13 @@ bool HttpRequest::processHttpRequest(HttpResponse* response)
         response->sendDataFunc = sendFile;
     }
 
-    return false;
+    return true;
 }
 
-string HttpRequest::decodeMsg(string msg)
+string HttpRequest::decodeMsg(const string& msg)
 {
     string str = string();
-    const char* from = msg.data();
+    const char* from = msg.c_str();
     for (; *from != '\0'; ++from)
     {
         // isxdigit -> 判断字符是不是16进制格式, 取值在 0-f
@@ -253,15 +277,14 @@ string HttpRequest::decodeMsg(string msg)
             str.append(1, *from);
         }
     }
-    str.append(1, '\0');
     return str;
 }
 
-const string HttpRequest::getFileType(const string name)
+const string HttpRequest::getFileType(const string& name)
 {
     // a.jpg a.mp4 a.html
     // 自右向左查找‘.’字符, 如不存在返回NULL
-    const char* dot = strrchr(name.data(), '.');
+    const char* dot = strrchr(name.c_str(), '.');
     if (dot == NULL)
         return "text/plain; charset=utf-8";	// 纯文本
     if (strcmp(dot, ".html") == 0 || strcmp(dot, ".htm") == 0)
@@ -298,30 +321,39 @@ const string HttpRequest::getFileType(const string name)
     return "text/plain; charset=utf-8";
 }
 
-void HttpRequest::sendDir(string dirName, Buffer* sendBuf, int cfd)
+void HttpRequest::sendDir(const string& dirName, Buffer* sendBuf, int cfd)
 {
     char buf[4096] = { 0 };
-    sprintf(buf, "<html><head><title>%s</title></head><body><table>", dirName.data());
-    struct dirent** namelist;
-    int num = scandir(dirName.data(), &namelist, NULL, alphasort);
+    snprintf(buf, sizeof(buf), "<html><head><title>%s</title></head><body><table>", dirName.c_str());
+    struct dirent** namelist = nullptr;
+    int num = scandir(dirName.c_str(), &namelist, NULL, alphasort);
+    if (num < 0)
+    {
+        perror("scandir");
+        return;
+    }
     for (int i = 0; i < num; ++i)
     {
         // 取出文件名 namelist 指向的是一个指针数组 struct dirent* tmp[]
         char* name = namelist[i]->d_name;
         struct stat st;
         char subPath[1024] = { 0 };
-        sprintf(subPath, "%s/%s", dirName.data(), name);
-        stat(subPath, &st);
+        snprintf(subPath, sizeof(subPath), "%s/%s", dirName.c_str(), name);
+        if (stat(subPath, &st) == -1)
+        {
+            free(namelist[i]);
+            continue;
+        }
         if (S_ISDIR(st.st_mode))
         {
             // a标签 <a href="">name</a>
-            sprintf(buf + strlen(buf),
+            snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
                 "<tr><td><a href=\"%s/\">%s</a></td><td>%ld</td></tr>",
                 name, name, st.st_size);
         }
         else
         {
-            sprintf(buf + strlen(buf),
+            snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
                 "<tr><td><a href=\"%s\">%s</a></td><td>%ld</td></tr>",
                 name, name, st.st_size);
         }
@@ -333,7 +365,7 @@ void HttpRequest::sendDir(string dirName, Buffer* sendBuf, int cfd)
         memset(buf, 0, sizeof(buf));
         free(namelist[i]);
     }
-    sprintf(buf, "</table></body></html>");
+    snprintf(buf, sizeof(buf), "</table></body></html>");
     // send(cfd, buf, strlen(buf), 0);
     sendBuf->appendString(buf);
 #ifndef MSG_SEND_AUTO
@@ -342,11 +374,15 @@ void HttpRequest::sendDir(string dirName, Buffer* sendBuf, int cfd)
     free(namelist);
 }
 
-void HttpRequest::sendFile(string fileName, Buffer* sendBuf, int cfd)
+void HttpRequest::sendFile(const string& fileName, Buffer* sendBuf, int cfd)
 {
     // 1. 打开文件
-    int fd = open(fileName.data(), O_RDONLY);
-    assert(fd > 0);
+    int fd = open(fileName.c_str(), O_RDONLY);
+    if (fd == -1)
+    {
+        perror("open");
+        return;
+    }
 #if 1
     while (1)
     {
@@ -366,8 +402,8 @@ void HttpRequest::sendFile(string fileName, Buffer* sendBuf, int cfd)
         }
         else
         {
-            close(fd);
             perror("read");
+            break;
         }
     }
 #else

@@ -1,6 +1,5 @@
 #pragma once
 #include "Channel.h"
-#include "EventLoop.h"
 #include <string>
 using namespace std;
 class EventLoop;
@@ -19,10 +18,10 @@ public:
     virtual int dispatch(int timeout = 2); // 单位: s
     inline void setChannel(Channel* channel)
     {
-        m_channel = channel;
+        _channel = channel;
     }
-    protected:
-    string m_name = string();
-    Channel* m_channel;
-    EventLoop* m_evLoop;
+protected:
+    string _name = string();
+    Channel* _channel = nullptr;
+    EventLoop* _evLoop = nullptr;
 };

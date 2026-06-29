@@ -15,18 +15,18 @@ public:
     void run();
     inline EventLoop* getEventLoop()
     {
-        return m_evLoop;
+        return _evLoop;
     }
 
 private:
     void running();
 
 private:
-    thread* m_thread;   // 保存线程的实例
-    thread::id m_threadID; // ID
-    string m_name;
-    mutex m_mutex;  // 互斥锁
-    condition_variable m_cond;    // 条件变量
-    EventLoop* m_evLoop;   // 反应堆模型
+    thread* _thread;   // 保存线程的实例
+    thread::id _threadID; // ID
+    string _name;
+    mutex _mutex;  // 互斥锁
+    condition_variable _cond;    // 条件变量
+    EventLoop* _evLoop;   // 反应堆模型
 };
 

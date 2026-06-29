@@ -11,6 +11,7 @@ struct ChannelMap* channelMapInit(int size)
     return NULL;
   }
 
+// 1.申请内存
   struct ChannelMap* map = (struct ChannelMap*)malloc(sizeof(struct ChannelMap));
   if(map == NULL)
   {
@@ -18,6 +19,7 @@ struct ChannelMap* channelMapInit(int size)
     return NULL;
   }
 
+// 2.申请一个指针数组。
   map->list = (struct Channel**)calloc((size_t)size, sizeof(struct Channel*));
   if(map->list == NULL)
   {
@@ -27,6 +29,8 @@ struct ChannelMap* channelMapInit(int size)
   }
 
   map->size = size;
+
+// 返还给调用者的。
   return map;
 }
 
@@ -37,6 +41,7 @@ void channelMapClear(struct ChannelMap* map)
     return;
   }
 
+// 清理指针数组所指向的空间的
   free(map->list);
   map->list = NULL;
   map->size = 0;
@@ -44,6 +49,7 @@ void channelMapClear(struct ChannelMap* map)
 }
 
 // MODIFIED: keep newSize as required capacity and guard zero-sized maps.
+// 重新开辟空间的函数
 bool makeMapRoom(struct ChannelMap* map, int newSize, int unitSize)
 {
   if(map == NULL || unitSize <= 0 || newSize <= 0)

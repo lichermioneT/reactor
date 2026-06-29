@@ -13,10 +13,10 @@ public:
     static int acceptConnection(void* arg);
 
 private:
-    int m_threadNum;
-    EventLoop* m_mainLoop;
-    ThreadPool* m_threadPool;
-    int m_lfd;
-    unsigned short m_port;
+    int _threadNum;
+    EventLoop* _mainLoop;
+    ThreadPool* _threadPool;
+    int _lfd;
+    unsigned short _port;
 };
 

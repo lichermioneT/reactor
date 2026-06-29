@@ -21,9 +21,9 @@ public:
     using handleFunc = std::function<int(void*)>;
     Channel(int fd, FDEvent events, handleFunc readFunc, handleFunc writeFunc, handleFunc destroyFunc, void* arg);
     // 回调函数
-    handleFunc readCallback;
-    handleFunc writeCallback;
-    handleFunc destroyCallback;
+    handleFunc _readCallback;
+    handleFunc _writeCallback;
+    handleFunc _destroyCallback;
     // 修改fd的写事件(检测 or 不检测)
     void writeEventEnable(bool flag);
     // 判断是否需要检测文件描述符的写事件
@@ -31,22 +31,22 @@ public:
     // 取出私有成员的值
     inline int getEvent()
     {
-        return m_events;
+        return _events;
     }
     inline int getSocket()
     {
-        return m_fd;
+        return _fd;
     }
     inline const void* getArg()
     {
-        return m_arg;
+        return _arg;
     }
 private:
     // 文件描述符
-    int m_fd;
+    int _fd;
     // 事件
-    int m_events;
+    int _events;
     // 回调函数的参数
-    void* m_arg;
+    void* _arg;
 };
 

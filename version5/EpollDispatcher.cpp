@@ -7,20 +7,20 @@
 
 EpollDispatcher::EpollDispatcher(EventLoop* evloop) : Dispatcher(evloop)
 {
-    m_epfd = epoll_create(10);
-    if (m_epfd == -1)
+    _epfd = epoll_create(10);
+    if (_epfd == -1)
     {
         perror("epoll_create");
         exit(0);
     }
-    m_events = new struct epoll_event[m_maxNode];
-    m_name = "Epoll";
+    _events = new struct epoll_event[_maxNode];
+    _name = "Epoll";
 }
 
 EpollDispatcher::~EpollDispatcher()
 {
-    close(m_epfd);
-    delete[]m_events;
+    close(_epfd);
+    delete[]_events;
 }
 
 int EpollDispatcher::add()
@@ -43,7 +43,10 @@ int EpollDispatcher::remove()
         exit(0);
     }
     // 通过 channel 释放对应的 TcpConnection 资源
-    m_channel->destroyCallback(const_cast<void*>(m_channel->getArg()));
+    if (_channel->_destroyCallback)
+    {
+        _channel->_destroyCallback(const_cast<void*>(_channel->getArg()));
+    }
 
     return ret;
 }
@@ -61,12 +64,17 @@ int EpollDispatcher::modify()
 
 int EpollDispatcher::dispatch(int timeout)
 {
-    int count = epoll_wait(m_epfd, m_events, m_maxNode, timeout * 1000);
+    int count = epoll_wait(_epfd, _events, _maxNode, timeout * 1000);
+    if (count == -1)
+    {
+        perror("epoll_wait");
+        exit(0);
+    }
     for (int i = 0; i < count; ++i)
     {
-        int events = m_events[i].events;
-        int fd = m_events[i].data.fd;
-        if (events & EPOLLERR || events & EPOLLHUP)
+        int events = _events[i].events;
+        int fd = _events[i].data.fd;
+        if ((events & EPOLLERR) || (events & EPOLLHUP))
         {
             // 对方断开了连接, 删除 fd
             // epollRemove(Channel, evLoop);
@@ -74,11 +82,11 @@ int EpollDispatcher::dispatch(int timeout)
         }
         if (events & EPOLLIN)
         {
-            m_evLoop->eventActive(fd, (int)FDEvent::ReadEvent);
+            _evLoop->eventActive(fd, (int)FDEvent::ReadEvent);
         }
         if (events & EPOLLOUT)
         {
-            m_evLoop->eventActive(fd, (int)FDEvent::WriteEvent);
+            _evLoop->eventActive(fd, (int)FDEvent::WriteEvent);
         }
     }
     return 0;
@@ -87,17 +95,17 @@ int EpollDispatcher::dispatch(int timeout)
 int EpollDispatcher::epollCtl(int op)
 {
     struct epoll_event ev;
-    ev.data.fd = m_channel->getSocket();
+    ev.data.fd = _channel->getSocket();
     int events = 0;
-    if (m_channel->getEvent() & (int)FDEvent::ReadEvent)
+    if (_channel->getEvent() & (int)FDEvent::ReadEvent)
     {
         events |= EPOLLIN;
     }
-    if (m_channel->getEvent() & (int)FDEvent::WriteEvent)
+    if (_channel->getEvent() & (int)FDEvent::WriteEvent)
     {
         events |= EPOLLOUT;
     }
     ev.events = events;
-    int ret = epoll_ctl(m_epfd, op, m_channel->getSocket(), &ev);
+    int ret = epoll_ctl(_epfd, op, _channel->getSocket(), &ev);
     return ret;
 }

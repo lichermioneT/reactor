@@ -17,10 +17,10 @@ public:
     EventLoop* takeWorkerEventLoop();
 private:
     // 主线程的反应堆模型
-    EventLoop* m_mainLoop;
-    bool m_isStart;
-    int m_threadNum;
-    vector<WorkerThread*> m_workerThreads;
-    int m_index;
+    EventLoop* _mainLoop;
+    bool _isStart;
+    int _threadNum;
+    vector<WorkerThread*> _workerThreads;
+    int _index;
 };
 
