@@ -11,6 +11,7 @@
 
 struct Listener* listenerInit(unsigned short port)
 {
+// 1.开空间，存放监听的套接字和监听的端口信息
   struct Listener* listener = (struct Listener*)malloc(sizeof(struct Listener));
   if(listener == NULL)
   {
@@ -18,6 +19,7 @@ struct Listener* listenerInit(unsigned short port)
     return NULL;
   }
 
+// 2.创建监听的套接字
   int listenfd = socket(AF_INET, SOCK_STREAM, 0);
   if(listenfd < 0)
   {
@@ -26,6 +28,7 @@ struct Listener* listenerInit(unsigned short port)
     return NULL;
   }
 
+// 3.设置端口复用
   int opt = 1;
   if(setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
   {
@@ -35,6 +38,7 @@ struct Listener* listenerInit(unsigned short port)
     return NULL;
   }
 
+// 4.将监听和端口信息绑定了
   struct sockaddr_in addr;
   memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
@@ -49,6 +53,7 @@ struct Listener* listenerInit(unsigned short port)
     return NULL;
   }
 
+// 5.将状态设置为监听的状态，监听的队列为128
   if(listen(listenfd, 128) < 0)
   {
     perror("listen");
@@ -59,17 +64,21 @@ struct Listener* listenerInit(unsigned short port)
 
   listener->lfd = listenfd;
   listener->port = port;
+
+// 6.监听的文件描述符和监听的端口返回
   return listener;
 }
 
 int acceptConnection(void* arg)
 {
+// 1.数据类型的转换
   struct TcpServer* tcpServer = (struct TcpServer*)arg;
   if(tcpServer == NULL || tcpServer->listener == NULL)
   {
     return -1;
   }
 
+// 2.接收新的链接信息
   int cfd = accept(tcpServer->listener->lfd, NULL, NULL);
   if(cfd < 0)
   {
@@ -77,6 +86,7 @@ int acceptConnection(void* arg)
     return -1;
   }
 
+// 3.线程池里面拿一个反应堆的模型
   struct EventLoop* evLoop = takeWorkerEventLoop(tcpServer->threadPool);
   if(evLoop == NULL)
   {
@@ -84,12 +94,14 @@ int acceptConnection(void* arg)
     return -1;
   }
 
+// ?
   tcpConnectionInit(cfd, evLoop);
   return 0;
 }
 
 struct TcpServer* tcpServerInit(unsigned short port, int threadNum)
 {
+// 1.开空间的
   struct TcpServer* tcpServer = (struct TcpServer*)malloc(sizeof(struct TcpServer));
   if(tcpServer == NULL)
   {
@@ -97,6 +109,7 @@ struct TcpServer* tcpServerInit(unsigned short port, int threadNum)
     return NULL;
   }
 
+// 2.线程池，主线程的反应堆，监听套接字的信息
   tcpServer->threadNum = threadNum;
   tcpServer->listener = listenerInit(port);
   tcpServer->mainLoop = EventLoopInit();
@@ -108,6 +121,7 @@ struct TcpServer* tcpServerInit(unsigned short port, int threadNum)
     return NULL;
   }
 
+// 3.初始化，监听的信息，主线程的反应堆，线程池
   tcpServer->threadPool = threadPollInit(tcpServer->mainLoop, threadNum);
   if(tcpServer->threadPool == NULL)
   {
@@ -128,16 +142,20 @@ void TcpServerRun(struct TcpServer* server)
     return;
   }
 
+// 1.运行线程池
   threadPoolRun(server->threadPool);
 
-  struct Channel* channel = channelInit(server->listener->lfd, ReadEvent,
-                                        acceptConnection, NULL, NULL, server);
+// 2.监听的文件描述符封装
+  struct Channel* channel = channelInit(server->listener->lfd, ReadEvent, acceptConnection, NULL, NULL, server);
   if(channel == NULL)
   {
     return;
   }
 
   // MODIFIED: listener fd registration is now guarded against allocation failure.
+// 3.添加到任务队列里面
   eventLoopAddTask(server->mainLoop, channel, ADD);
+
+// 4.主线程进行运行
   eventLoopRun(server->mainLoop);
 }

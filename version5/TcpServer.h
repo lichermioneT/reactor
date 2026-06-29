@@ -1,24 +1,22 @@
 #pragma once
-
 #include "EventLoop.h"
 #include "ThreadPool.h"
 
-struct Listener
+class TcpServer
 {
-  int lfd;
-  unsigned short port;
+public:
+    TcpServer(unsigned short port, int threadNum);
+    // 初始化监听
+    void setListen();
+    // 启动服务器
+    void run();
+    static int acceptConnection(void* arg);
+
+private:
+    int m_threadNum;
+    EventLoop* m_mainLoop;
+    ThreadPool* m_threadPool;
+    int m_lfd;
+    unsigned short m_port;
 };
 
-struct TcpServer
-{
-  int threadNum;
-  struct ThreadPool* threadPool;
-  struct EventLoop* mainLoop;
-  struct Listener* listener;
-};
-
-// MODIFIED: restored server declarations and acceptConnection prototype.
-struct Listener* listenerInit(unsigned short port);
-struct TcpServer* tcpServerInit(unsigned short port, int threadNum);
-void TcpServerRun(struct TcpServer* server);
-int acceptConnection(void* arg);

@@ -1,40 +1,52 @@
 #pragma once
-
 #include "Buffer.h"
+#include <map>
+#include <functional>
+using namespace std;
 
-enum HttpStatusCode
+// 定义状态码枚举
+enum class StatusCode
 {
-  Unkown,
-  OK = 200,
-  MovePermanently = 301,
-  MoveTemporarily = 302,
-  BadRequest = 400,
-  NotFound = 404
+    Unknown,
+    OK = 200,
+    MovedPermanently = 301,
+    MovedTemporarily = 302,
+    BadRequest = 400,
+    NotFound = 404
 };
 
-struct ResponseHeader
+// 定义结构体
+class HttpResponse
 {
-  char key[32];
-  char value[128];
+public:
+    HttpResponse();
+    ~HttpResponse();
+    function<void(const string, struct Buffer*, int)> sendDataFunc;
+    // 添加响应头
+    void addHeader(const string key, const string value);
+    // 组织http响应数据
+    void prepareMsg(Buffer* sendBuf, int socket);
+    inline void setFileName(string name)
+    {
+        m_fileName = name;
+    }
+    inline void setStatusCode(StatusCode code)
+    {
+        m_statusCode = code;
+    }
+private:
+    // 状态行: 状态码, 状态描述
+    StatusCode m_statusCode;
+    string m_fileName;
+    // 响应头 - 键值对
+    map<string, string> m_headers;
+    // 定义状态码和描述的对应关系
+    const map<int, string> m_info = {
+        {200, "OK"},
+        {301, "MovedPermanently"},
+        {302, "MovedTemporarily"},
+        {400, "BadRequest"},
+        {404, "NotFound"},
+    };
 };
 
-typedef int (*responseBody)(const char* fileName, struct Buffer* sendBuf, int socket);
-
-struct HttpRespone
-{
-  enum HttpStatusCode statusCode;
-  char statusMsg[128];
-  char fileName[128];
-  struct ResponseHeader* headers;
-  int headerNum;
-  responseBody sendDataFunc;
-};
-
-// MODIFIED: restored response declarations.
-struct HttpRespone* httResponseInit();
-void httpResponeDestory(struct HttpRespone* respone);
-void httpResponeReset(struct HttpRespone* respone);
-void httpsResponeAddHeader(struct HttpRespone* respone, const char* key,
-                           const char* value);
-void httpResponsePrepareMsg(struct HttpRespone* respone, struct Buffer* sendBuf,
-                            int socket);

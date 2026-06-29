@@ -1,50 +1,52 @@
 #pragma once
+#include <functional>
 
-// 事件回调函数类型
-using handleFunc = int(*)(void*);
+// 定义函数指针
+// typedef int(*handleFunc)(void* arg);
+// using handleFunc = int(*)(void*);
 
-// 文件描述符事件类型
+// 定义文件描述符的读写事件
 enum class FDEvent
 {
-  ReadEvent = 0x02,
-  WriteEvent = 0x04
+    TimeOut = 0x01,
+    ReadEvent = 0x02,
+    WriteEvent = 0x04
 };
 
-// Channel:封装fd,关注事件，回调函数和回调函数参数
+// 可调用对象包装器打包的是什么? 1. 函数指针 2. 可调用对象(可以向函数一样使用)
+// 最终得到了地址, 但是没有调用
 class Channel
 {
+public:
+    using handleFunc = std::function<int(void*)>;
+    Channel(int fd, FDEvent events, handleFunc readFunc, handleFunc writeFunc, handleFunc destroyFunc, void* arg);
+    // 回调函数
+    handleFunc readCallback;
+    handleFunc writeCallback;
+    handleFunc destroyCallback;
+    // 修改fd的写事件(检测 or 不检测)
+    void writeEventEnable(bool flag);
+    // 判断是否需要检测文件描述符的写事件
+    bool isWriteEventEnable();
+    // 取出私有成员的值
+    inline int getEvent()
+    {
+        return m_events;
+    }
+    inline int getSocket()
+    {
+        return m_fd;
+    }
+    inline const void* getArg()
+    {
+        return m_arg;
+    }
 private:
-  int _fd;
-  int _events;
-  void* _arg;
-
-public:
-  handleFunc _readCallback;
-  handleFunc _writeCallback;
-  handleFunc _destroyCallback;
-
-public:
-  Channel(int fd, int events, void*arg, handleFunc readFunc, handleFunc writeFunc, handleFunc destoryCallback);
-
-  // 开启或者关闭写事件
-  void writeEventEnable(bool flag);
-
-  // 判断是否监听写事件
-  bool isWriteEventEnable() const; 
-
-public:
-  inline int getSocket() const
-  {
-    return _fd;
-  }
-
-  inline int getEvent()const
-  {
-    return _events;
-  }
-
-  inline const void* getArg() const
-  {
-    return _arg;
-  }
+    // 文件描述符
+    int m_fd;
+    // 事件
+    int m_events;
+    // 回调函数的参数
+    void* m_arg;
 };
+

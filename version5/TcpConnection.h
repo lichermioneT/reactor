@@ -1,24 +1,28 @@
 #pragma once
-
+#include "EventLoop.h"
 #include "Buffer.h"
 #include "Channel.h"
-#include "EventLoop.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 
-// #define MSG_SEND_AUTO
+//#define MSG_SEND_AUTO
 
-struct TcpConnection
+class TcpConnection
 {
-  struct EventLoop* evLoop;
-  struct Channel* channel;
-  struct Buffer* readBuf;
-  struct Buffer* writeBuf;
-  char name[32];
-  struct HttpRequest* request;
-  struct HttpRespone* response;
-};
+public:
+    TcpConnection(int fd, EventLoop* evloop);
+    ~TcpConnection();
 
-// MODIFIED: restored TcpConnection fields and declarations.
-struct TcpConnection* tcpConnectionInit(int fd, struct EventLoop* evloop);
-int tcpConnectionDestory(void* arg);
+    static int processRead(void* arg);
+    static int processWrite(void* arg);
+    static int destroy(void* arg);
+private:
+    string m_name;
+    EventLoop* m_evLoop;
+    Channel* m_channel;
+    Buffer* m_readBuf;
+    Buffer* m_writeBuf;
+    // http 协议
+    HttpRequest* m_request;
+    HttpResponse* m_response;
+};

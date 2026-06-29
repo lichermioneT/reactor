@@ -60,41 +60,6 @@ static int processWrite(void* arg)
   return 0;
 }
 
-struct TcpConnection* tcpConnectionInit(int fd, struct EventLoop* evloop)
-{
-  if(fd < 0 || evloop == NULL)
-  {
-    return NULL;
-  }
-
-  struct TcpConnection* conn =
-      (struct TcpConnection*)malloc(sizeof(struct TcpConnection));
-  if(conn == NULL)
-  {
-    perror("malloc");
-    return NULL;
-  }
-
-  conn->evLoop = evloop;
-  conn->channel = channelInit(fd, ReadEvent, processRead, processWrite,
-                              tcpConnectionDestory, conn);
-  conn->readBuf = bufferInit(10240);
-  conn->writeBuf = bufferInit(10240);
-  conn->request = httpRequestInit();
-  conn->response = httResponseInit();
-  snprintf(conn->name, sizeof(conn->name), "Connect-%d", fd);
-
-  if(conn->channel == NULL || conn->readBuf == NULL || conn->writeBuf == NULL ||
-     conn->request == NULL || conn->response == NULL)
-  {
-    tcpConnectionDestory(conn);
-    return NULL;
-  }
-
-  eventLoopAddTask(evloop, conn->channel, ADD);
-  return conn;
-}
-
 int tcpConnectionDestory(void* arg)
 {
   struct TcpConnection* conn = (struct TcpConnection*)arg;
@@ -116,3 +81,40 @@ int tcpConnectionDestory(void* arg)
   free(conn);
   return 0;
 }
+
+struct TcpConnection* tcpConnectionInit(int fd, struct EventLoop* evloop)
+{
+  if(fd < 0 || evloop == NULL)
+  {
+    return NULL;
+  }
+
+// 1.开空间
+  struct TcpConnection* conn = (struct TcpConnection*)malloc(sizeof(struct TcpConnection));
+  if(conn == NULL)
+  {
+    perror("malloc");
+    return NULL;
+  }
+
+// 2.初始化数据，反应堆，监听的文件描述符封装成chanenl, 读写数据的内存，请求和响应的
+  conn->evLoop = evloop;
+  conn->channel = channelInit(fd, ReadEvent, processRead, processWrite, tcpConnectionDestory, conn);
+  conn->readBuf = bufferInit(10240);
+  conn->writeBuf = bufferInit(10240);
+  conn->request = httpRequestInit();
+  conn->response = httResponseInit();
+  snprintf(conn->name, sizeof(conn->name), "Connect-%d", fd);
+
+  if(conn->channel == NULL || conn->readBuf == NULL || conn->writeBuf == NULL ||
+     conn->request == NULL || conn->response == NULL)
+  {
+    tcpConnectionDestory(conn);
+    return NULL;
+  }
+
+// 3.监听文件免费添加到反应堆模型
+  eventLoopAddTask(evloop, conn->channel, ADD);
+  return conn;
+}
+

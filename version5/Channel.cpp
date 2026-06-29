@@ -1,27 +1,30 @@
 #include "Channel.h"
+#include <stdlib.h>
 
-Channel::Channel(int fd, int events, void* arg, handleFunc readFunc, handleFunc writeFunc, handleFunc destoryCallback)
-  :_fd(fd)
-  ,_events(events)
-  ,_arg(arg)
-  ,_readCallback(readFunc)
-  ,_writeCallback(writeFunc)
-  ,_destroyCallback(destoryCallback)
-{}
+Channel::Channel(int fd, FDEvent events, handleFunc readFunc, handleFunc writeFunc, handleFunc destroyFunc, void* arg)
+{
+    m_arg = arg;
+    m_fd = fd;
+    m_events = (int)events;
+    readCallback = readFunc;
+    writeCallback = writeFunc;
+    destroyCallback = destroyFunc;
+}
 
 void Channel::writeEventEnable(bool flag)
 {
-  if(flag)
-  {
-    _events |= static_cast<int>(FDEvent::WriteEvent);
-  }
-  else
-  {
-    _events &= ~static_cast<int>(FDEvent::WriteEvent);
-  }
+    if (flag)
+    {
+        // m_events |= (int)FDEvent::WriteEvent;
+        m_events |= static_cast<int>(FDEvent::WriteEvent);
+    }
+    else
+    {
+        m_events = m_events & ~(int)FDEvent::WriteEvent;
+    }
 }
 
-bool Channel::isWriteEventEnable() const
+bool Channel::isWriteEventEnable()
 {
-  return _events & static_cast<int>(FDEvent::WriteEvent);
+    return m_events & (int)FDEvent::WriteEvent;
 }

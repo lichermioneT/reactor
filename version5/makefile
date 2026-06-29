@@ -1,17 +1,24 @@
-CC = gcc
-CFLAGS = -Wall -g
-TARGET = server
+CXX := g++
 
-SRC = $(wildcard *.c)
-OBJ = $(SRC:.c=.o)
+CXXFLAGS := -std=c++11 -Wall -Wextra -g
+LDFLAGS := -pthread
 
-$(TARGET): $(OBJ)
-	$(CC) $(OBJ) -o $(TARGET) -pthread
+TARGET := server
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+SRCS := $(wildcard *.cpp)
+OBJS := $(SRCS:.cpp=.o)
+
+$(TARGET): $(OBJS)
+	$(CXX) $(OBJS) -o $(TARGET) $(LDFLAGS)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+.PHONY: all clean rebuild
+
+all: $(TARGET)
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f $(OBJS) $(TARGET)
 
-.PHONY: clean
+rebuild: clean all
