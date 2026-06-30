@@ -21,14 +21,13 @@ struct ThreadPool* threadPollInit(struct EventLoop* mainLoop, int count)
 
   pool->index = 0;
   pool->isStart = false;
-  pool->mainLopp = mainLoop;
+  pool->mainLoop = mainLoop;
   pool->threadNum = count;
   pool->workerThreads = NULL;
 
   if(count > 0)
   {
-    pool->workerThreads =
-        (struct WorkThread*)malloc(sizeof(struct WorkThread) * (size_t)count);
+    pool->workerThreads = (struct WorkThread*)malloc(sizeof(struct WorkThread) * (size_t)count);
     if(pool->workerThreads == NULL)
     {
       perror("malloc");
@@ -43,7 +42,7 @@ struct ThreadPool* threadPollInit(struct EventLoop* mainLoop, int count)
 void threadPoolRun(struct ThreadPool* pool)
 {
   assert(pool && !pool->isStart);
-  if(pool->mainLopp->threadID != pthread_self())
+  if(pool->mainLoop->threadID != pthread_self())
   {
     exit(0);
   }
@@ -56,16 +55,17 @@ void threadPoolRun(struct ThreadPool* pool)
   }
 }
 
+// 拿一个反应堆模型
 struct EventLoop* takeWorkerEventLoop(struct ThreadPool* pool)
 {
   assert(pool && pool->isStart);
 
-  if(pool->mainLopp->threadID != pthread_self())
+  if(pool->mainLoop->threadID != pthread_self())
   {
     exit(0);
   }
 
-  struct EventLoop* evLoop = pool->mainLopp;
+  struct EventLoop* evLoop = pool->mainLoop;
   if(pool->threadNum > 0)
   {
     evLoop = pool->workerThreads[pool->index].evLoop;

@@ -10,13 +10,13 @@
 
 struct TcpConnection
 {
-  struct EventLoop* evLoop;
-  struct Channel* channel;
-  struct Buffer* readBuf;
-  struct Buffer* writeBuf;
-  char name[32];
-  struct HttpRequest* request;
-  struct HttpRespone* response;
+  struct EventLoop* evLoop;  // 外面传进来的反应堆模型
+  struct Channel* channel;   // fd注册成channel
+  struct Buffer* readBuf;    // 读缓冲区
+  struct Buffer* writeBuf;   // 写缓冲区
+  char name[32];             // conn名称信息
+  struct HttpRequest* request;   // 请求
+  struct HttpRespone* response;  // 响应
 };
 
 // MODIFIED: restored TcpConnection fields and declarations.

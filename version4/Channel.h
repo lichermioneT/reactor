@@ -11,18 +11,19 @@ enum FDEvent
 
 struct Channel
 {
-  int fd;
-  int events;
-  handleFunc readCallback;
-  handleFunc writeCallback;
-  handleFunc destoryCallback;
-  void* arg;
+  int fd;                     // 文件描述符
+  int events;                 // 关系的事件
+  handleFunc readCallback;    // 读事件
+  handleFunc writeCallback;   // 写事件
+  handleFunc destoryCallback; // 销毁事件
+  void* arg;                  // 事件参数
 };
 
 // MODIFIED: restored fd/readCallback fields and function declarations.
 
 // 初始化 Channel，封装 fd、监听事件、回调函数和回调参数
-struct Channel* channelInit(int fd, int events, 
+struct Channel* channelInit(int fd, 
+                            int events, 
                             handleFunc reaFunc,
                             handleFunc writeFunc, 
                             handleFunc destoryCallback,

@@ -102,8 +102,10 @@ struct TcpConnection* tcpConnectionInit(int fd, struct EventLoop* evloop)
   conn->channel = channelInit(fd, ReadEvent, processRead, processWrite, tcpConnectionDestory, conn);
   conn->readBuf = bufferInit(10240);
   conn->writeBuf = bufferInit(10240);
+  
   conn->request = httpRequestInit();
   conn->response = httResponseInit();
+
   snprintf(conn->name, sizeof(conn->name), "Connect-%d", fd);
 
   if(conn->channel == NULL || conn->readBuf == NULL || conn->writeBuf == NULL ||
@@ -113,7 +115,7 @@ struct TcpConnection* tcpConnectionInit(int fd, struct EventLoop* evloop)
     return NULL;
   }
 
-// 3.监听文件添加到反应堆模型
+// 3.文件描述符添加到反应堆模型
   eventLoopAddTask(evloop, conn->channel, ADD);
   return conn;
 }

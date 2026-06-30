@@ -19,7 +19,7 @@ struct Channel* channelInit(int fd, int events,
 
 // 2.初始化数据
   data->fd = fd;
-  data->events = events;
+  data->events = events; // 判断是否是读写的事件
   data->readCallback = reaFunc;
   data->writeCallback = writeFunc;
   data->destoryCallback = destoryCallback;

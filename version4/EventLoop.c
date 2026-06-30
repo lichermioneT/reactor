@@ -77,6 +77,7 @@ struct EventLoop* EventLoopInitEx(const char* threadName)
     return NULL;
   }
 
+  // 2.3唤醒的文件描述符，注册的是读事件，readLocalMessage事件的。
   struct Channel* channel = channelInit(evLoop->socketPair[1], ReadEvent,
                                         readLocalMessage, NULL, NULL, evLoop);
   if(channel == NULL)
@@ -108,15 +109,17 @@ int eventLoopRun(struct EventLoop* evLoop)
   struct Dispatcher* dispatcher = evLoop->dispatcher;
   while(!evLoop->isQuit)
   {
-    // 1.1启动监听了
+    // 1.1启动监听了，监听成功了就激活注册的事件。激活函数就在下面呢的。
     dispatcher->dispatch(evLoop, 2);
-    // 1.2遍历任务队列，然后增删查改
+
+    // 1.2遍历任务队列，然后增删查改。
     eventLoopProcessTask(evLoop);
   }
 
   return 0;
 }
 
+// 激活读写事件
 int eventActivate(struct EventLoop* evLoop, int fd, int event)
 {
   if(fd < 0 || evLoop == NULL || evLoop->channelMap == NULL ||
@@ -125,12 +128,14 @@ int eventActivate(struct EventLoop* evLoop, int fd, int event)
     return -1;
   }
 
+// 定位fd的位置信息
   struct Channel* channel = evLoop->channelMap->list[fd];
   if(channel == NULL || channel->fd != fd)
   {
     return -1;
   }
 
+// channel的回调函数
   if((event & ReadEvent) && channel->readCallback != NULL)
   {
     channel->readCallback(channel->arg); // 监听文件描述符的读事件
@@ -291,7 +296,6 @@ int eventLoopModify(struct EventLoop* evLoop, struct Channel* channel)
 
   return evLoop->dispatcher->modify(channel, evLoop);
 }
-
 
 int destroyChannel(struct EventLoop* evLoop, struct Channel* channel)
 {
