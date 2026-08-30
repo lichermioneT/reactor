@@ -19,7 +19,7 @@ int initListenFd(uint16_t port)
 {
   // 1.创建监听的fd
   int listenfd = socket(AF_INET, SOCK_STREAM, 0);
-  if(listenfd <  0)
+  if(listenfd ==  -1)
   {
     perror("socket");
     return -1;
@@ -27,7 +27,7 @@ int initListenFd(uint16_t port)
 
   // 2.设置端口复用
   int opt = 1;
-  if(setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof opt) < 0)
+  if(setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof opt) == -1)
   {
     perror("setsockopt");
     return -1;
@@ -35,18 +35,19 @@ int initListenFd(uint16_t port)
   
   // 3.绑定
   struct sockaddr_in addr;
+  memset(&addr, 0, sizeof addr);
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = htonl(INADDR_ANY); // 任意网卡地址
   addr.sin_port = htons(port);
 
-  if(bind(listenfd, (struct sockaddr*)&addr, sizeof addr) < 0)
+  if(bind(listenfd, (struct sockaddr*)&addr, sizeof addr) == -1)
   {
     perror("bind");
     return -1;
   }
 
   // 4.监听
-  if(listen(listenfd, 128) < 0)
+  if(listen(listenfd, 128) == -1)
   {
     perror("listen");
     return -1;
@@ -59,7 +60,7 @@ int epollrun(int lfd)
 {
   // 1.创建epoll实例
   int epfd = epoll_create(1);
-  if(epfd < 0)
+  if(epfd == -1)
   {
     perror("epfd");
     return -1;
@@ -68,9 +69,9 @@ int epollrun(int lfd)
   // 2.lfd上树
   struct epoll_event ev; 
   ev.data.fd = lfd;
-  ev.events = EPOLLIN;
+  ev.events = EPOLLIN;  // 客户端的请求事件，读事件。
 
-  if(epoll_ctl(epfd, EPOLL_CTL_ADD, lfd, &ev) < 0)
+  if(epoll_ctl(epfd, EPOLL_CTL_ADD, lfd, &ev) == -1)
   {
     perror("epoll_ctl");
     return -1;
@@ -83,18 +84,22 @@ int epollrun(int lfd)
   while(1)
   {
     int n = epoll_wait(epfd, evs, size, -1);
+    if(n == -1)
+    {
+      perror("epoll_wait");
+      return -1;
+    }
+
     for(int i = 0; i < n; ++i)
     {
       int fd  = evs[i].data.fd;
       if(fd == lfd)
       { 
-        acceptClient(epfd, lfd);
-        printf("新链接到来\n");
+        acceptClient(epfd, lfd);    // 1.新链接的到来。(上epoll模型)
       }
       else 
       {
-        // 通信的描述符
-        recvHttpRequest(fd, epfd);
+        recvHttpRequest(fd, epfd); //  2.客户端的请求。(解析HTTP协议)
       }
     }
   }
@@ -103,13 +108,27 @@ int epollrun(int lfd)
 
 int acceptClient(int epfd, int lfd)
 {
+  struct sockaddr_in clientAddr;
+  memset(&clientAddr, 0, sizeof clientAddr);
+  socklen_t clientLen = sizeof clientAddr;
+    
   // 1.建立链接
-  int cfd = accept(lfd, NULL, NULL);
-  if(cfd  < 0)
+  int cfd = accept(lfd, (struct sockaddr*)&clientAddr, &clientLen);
+  if(cfd  ==  -1)
   {
     perror("accept");
     return -1;
   }
+
+  char ip[INET_ADDRSTRLEN] = {0};
+  if(inet_ntop(AF_INET, &clientAddr.sin_addr, ip, sizeof ip) == NULL)
+  {
+    perror("inet_ntop");
+    return -1;
+  }
+  
+  printf("client ip   : %s \n", ip);
+  printf("client port : %d \n", ntohs(clientAddr.sin_port));
 
   // 2.设置非阻塞
   int flag = fcntl(cfd, F_GETFL);
@@ -120,7 +139,7 @@ int acceptClient(int epfd, int lfd)
   ev.data.fd = cfd;
   ev.events = EPOLLIN | EPOLLET;
   
-  if(epoll_ctl(epfd, EPOLL_CTL_ADD, cfd, &ev) < 0)
+  if(epoll_ctl(epfd, EPOLL_CTL_ADD, cfd, &ev) == -1)
   {
     perror("epoll_ctl");
     return -1;
@@ -192,10 +211,13 @@ int parseRequestLine(const char* line, int cfd)
     return -1;
   }
 
+  printf("method:%s\n",  method);
+  printf("path:%s\n",  path);
+
   decodeMsg(path, path);
 
   // 处理客户端请求的静态资源(目录或者文件)
-  char* file = NULL;
+  const char* file = NULL;
   if(strcmp(path, "/") == 0)
   {
     file = "./"; //相对路径，表示资源的根目录。
@@ -368,14 +390,14 @@ int sendDir(const char* dirName, int cfd)
         {
             // a标签 <a href="">name</a>
             sprintf(buf + strlen(buf), 
-                "<tr><td><a href=\"%s/\">%s</a></td><td>%ld</td></tr>", 
-                name, name, st.st_size);
+                   "<tr><td><a href=\"%s/\">%s</a></td><td>%ld</td></tr>", 
+                   name, name, st.st_size);
         }
         else
         {
             sprintf(buf + strlen(buf),
-                "<tr><td><a href=\"%s\">%s</a></td><td>%ld</td></tr>",
-                name, name, st.st_size);
+                    "<tr><td><a href=\"%s\">%s</a></td><td>%ld</td></tr>",
+                    name, name, st.st_size);
         }
         send(cfd, buf, strlen(buf), 0);
         memset(buf, 0, sizeof(buf));
@@ -422,7 +444,6 @@ void decodeMsg(char* to, char* from)
             // 字符拷贝, 赋值
             *to = *from;
         }
-
     }
     *to = '\0';
 }

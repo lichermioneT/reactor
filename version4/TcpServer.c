@@ -94,6 +94,8 @@ int acceptConnection(void* arg)
     return -1;
   }
 
+  printf("%s\n", evLoop->threadName); 
+
 // ?
   tcpConnectionInit(cfd, evLoop);
   return 0;
