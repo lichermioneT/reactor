@@ -6,8 +6,8 @@ struct Channel;
 
 struct ChannelMap
 {
-  int size;
-  struct Channel** list;
+  int size;               // 数组的大小
+  struct Channel** list;  // 指针数组
 };
 
 // MODIFIED: restored struct closing brace and map API declarations.

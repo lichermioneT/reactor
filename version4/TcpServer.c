@@ -94,9 +94,13 @@ int acceptConnection(void* arg)
     return -1;
   }
 
+<<<<<<< HEAD
   printf("%s\n", evLoop->threadName); 
 
 // ?
+=======
+// 4.为这个文件描述符，注册读写事件和对应的空间信息
+>>>>>>> dee2b095b28e07d9cf79bf87b419986f0e3377aa
   tcpConnectionInit(cfd, evLoop);
   return 0;
 }
@@ -133,6 +137,7 @@ struct TcpServer* tcpServerInit(unsigned short port, int threadNum)
     return NULL;
   }
 
+// 4.返回给调用者
   return tcpServer;
 }
 
@@ -147,7 +152,8 @@ void TcpServerRun(struct TcpServer* server)
 // 1.运行线程池
   threadPoolRun(server->threadPool);
 
-// 2.监听的文件描述符封装
+// 2.监听的文件描述符封装，监听文件描述符的读事件
+// 2.1得到新的文件描述符 2.2拿一个线程池的反应堆，2.3为这个文件描述符注册读写事件和空间信息的。 2.4添加到反应堆模型里面去的
   struct Channel* channel = channelInit(server->listener->lfd, ReadEvent, acceptConnection, NULL, NULL, server);
   if(channel == NULL)
   {

@@ -18,15 +18,27 @@ EpollDispatcher模块总结
 6.clear:data(辅助的空间)
 */
 
+// epolladd 负责注册事件；
+// epoll_wait 负责等待事件；
+// epolldispatch 负责遍历就绪事件；
+// eventActivate 负责激活并调用回调函数。
+
+// 1.创建epoll树和辅助的空间信息
 static void* epollinit();
+
+// 2.启动监听任务，然后激活对应的事件信息
 static int epolldispatch(struct EventLoop* evloop, int timeout);
-
-static int epolladd(struct Channel* channel, struct EventLoop* evloop);
-static int epollremove(struct Channel* channel, struct EventLoop* evloop);
-static int epollmodify(struct Channel* channel, struct EventLoop* evloop);
-
-static int epollclear(struct EventLoop* evloop);
+// add,remove,modify的辅助函数
 static int epollCtl(struct Channel* channel, struct EventLoop* evloop, int op);
+
+// 3.add:判断读写添加到监听事件
+static int epolladd(struct Channel* channel, struct EventLoop* evloop);
+// 4.remove:判断读写，然后从检查集合里面删除了
+static int epollremove(struct Channel* channel, struct EventLoop* evloop);
+// 5.modify:判断读写，然后修改了读写的时间 
+static int epollmodify(struct Channel* channel, struct EventLoop* evloop);
+// 6.释放额外的空间
+static int epollclear(struct EventLoop* evloop);
 
 // MODIFIED: restored dispatcher object declaration.
 struct Dispatcher EpollDispatcher =
@@ -130,6 +142,7 @@ static int epollCtl(struct Channel* channel, struct EventLoop* evloop, int op)
   struct epoll_event ev;
   ev.data.fd = channel->fd;
 
+// 1.判断channel需要检查哪些事件的
   int events = 0;
   if(channel->events & ReadEvent)
   {
@@ -167,7 +180,7 @@ static int epollremove(struct Channel* channel, struct EventLoop* evloop)
     perror("EPOLL_CTL_DEL");
   }
 
-// 3.清理函数？？？？？
+// 3.清理函数？？？？？，应该是清除对应channel模块信息
   if(channel->destoryCallback != NULL)
   {
     channel->destoryCallback(channel->arg);
@@ -187,9 +200,9 @@ static int epollmodify(struct Channel* channel, struct EventLoop* evloop)
   return ret;
 }
 
+// 1.删除需要辅助的数组
 static int epollclear(struct EventLoop* evloop)
 {
-// 1.删除需要辅助的数组
   struct EpollData* data = (struct EpollData*)evloop->dispatcherdata;
   if(data != NULL)
   {
