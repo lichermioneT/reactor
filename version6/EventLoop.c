@@ -73,7 +73,7 @@ int eventLoopRun(struct EventLoop* evLoop)
   while(!evLoop->isQuit)
   {
     dispatcher->dispatch(evLoop, 2); // select poll epoll 
-    eventLoopProcessTask(evLoop);    // 
+    eventLoopProcessTask(evLoop);    // 遍历任务队列
   }
 
   return 0;

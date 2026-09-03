@@ -5,10 +5,10 @@
 
 struct ThreadPool
 {
-  struct EventLoop* mainLoop; // 建立链接
+  struct EventLoop* mainLoop; // 建立链接，主线程的反应堆模型
   bool isStart;
   int trheadNum;
-  struct WorkerThread* workerThreads;
+  struct WorkerThread* workerThreads; // 子线程的反应堆模型
   int index;
 };
 

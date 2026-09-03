@@ -1,5 +1,7 @@
 #pragma once
 
+// 读http的数据存储下来
+
 struct Buffer
 {
 // 指向内存的指针
@@ -28,3 +30,5 @@ int bufferAppendData(struct Buffer* buffer, const char* data, int size);
 int bufferAppendString(struct Buffer* buffer, const char* data);
 // 接收套接字
 int bufferSocketRead(struct Buffer* buffer, int fd);
+// 根据\r\n取出一行
+char* bufferFindCRLF(struct Buffer* buffer);

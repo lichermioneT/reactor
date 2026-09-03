@@ -33,6 +33,7 @@ void threadPoolRun(struct ThreadPool* pool)
   }
 }
 
+// 子线程的反应堆模型(其实和主线程的一模一样的)
 struct EventLoop* takeWorkerEventLoop(struct ThreadPool* pool)
 {
   assert(pool->isStart); 

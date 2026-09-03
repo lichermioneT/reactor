@@ -132,3 +132,14 @@ int bufferSocketRead(struct Buffer* buffer, int fd)
 
   return result;
 }
+
+char* bufferFindCRLF(struct Buffer* buffer)
+{
+  // strstr:
+  // memmem:
+  
+  // const char* ptr = memmem(buffer->data + buffer->readPos, bufferReadableSize(buffer), "\r\n", 2);
+  char* ptr = strstr(buffer->data + buffer->readPos, "\r\n");
+
+  return  ptr;
+}
