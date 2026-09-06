@@ -14,7 +14,6 @@ struct Dispatcher
   // 修改
   int (*modify)(struct Channel* channel, struct EventLoop* evLoop);
 
-
   // 事件监测
   int(*dispatch)(struct EventLoop* evLoop, int timeout);
   // 清除数据

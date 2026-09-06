@@ -1,4 +1,6 @@
 #include "HttpRequest.h"
+#include <sys/stat.h>
+#include <ctype.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <strings.h>
@@ -187,7 +189,7 @@ bool parseHttpRequestHeader(struct HttpRequest* request, struct Buffer* buffer)
   return false;
 }
 
-bool parseHttpRequest(struct HttpRequest* request, Buffer* buffer)
+bool parseHttpRequestHeader(struct HttpRequest* request, struct Buffer* buffer, struct HttpRespone* respone, struct Buffer* sendbuf, int socket)
 {
   bool flag = true;
   while(request->curState != ParseReqDone)
@@ -215,12 +217,92 @@ bool parseHttpRequest(struct HttpRequest* request, Buffer* buffer)
     if(request->curState == ParseReqDone)
     {
       // 1.根据解析数，做处理
+      processHttpRequest(request);
       // 2.组织协议
+      httpResponePrepareMsg(respone, sendbuf, socket);
     }
 
   }
 
   request->curState  = ParseReqLine;
-
   return flag;
+}
+
+// 处理get
+bool processHttpRequest(struct HttpRequest* request)
+{
+  if(strcasecmp(request->methon, "get") != 0)
+  {
+    return -1;
+  }
+  
+  decodeMsg(request->url, request->url);
+
+
+  const char* file = NULL;
+  if(strcmp(request->url, "/") == 0)
+  {
+      file = "./";
+  }
+  else 
+  {
+    file = request->url + 1;
+  }
+
+  struct stat st;
+  int ret = stat(file, &st);
+  if(ret == -1)
+  {
+
+  }
+  
+  if(S_ISDIR(st.st_mode))
+  {
+
+  }
+  else 
+  {
+
+  }
+
+  return false;
+}
+
+int hexToDec(char c)
+{
+    if (c >= '0' && c <= '9')
+        return c - '0';
+    if (c >= 'a' && c <= 'f')
+        return c - 'a' + 10;
+    if (c >= 'A' && c <= 'F')
+        return c - 'A' + 10;
+
+    return 0;
+}
+
+// 解码
+// to 存储解码之后的数据, 传出参数, from被解码的数据, 传入参数
+void decodeMsg(char* to, char* from)
+{
+    for (; *from != '\0'; ++to, ++from)
+    {
+        // isxdigit -> 判断字符是不是16进制格式, 取值在 0-f
+        // Linux%E5%86%85%E6%A0%B8.jpg
+        if (from[0] == '%' && isxdigit(from[1]) && isxdigit(from[2]))
+        {
+            // 将16进制的数 -> 十进制 将这个数值赋值给了字符 int -> char
+            // B2 == 178
+            // 将3个字符, 变成了一个字符, 这个字符就是原始数据
+            *to = hexToDec(from[1]) * 16 + hexToDec(from[2]);
+
+            // 跳过 from[1] 和 from[2] 因此在当前循环中已经处理过了
+            from += 2;
+        }
+        else
+        {
+            // 字符拷贝, 赋值
+            *to = *from;
+        }
+    }
+    *to = '\0';
 }

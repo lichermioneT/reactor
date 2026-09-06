@@ -53,7 +53,8 @@ void bufferExtendRoom(struct Buffer* buffer, int size)
     // 未读内存的大小
     int readable = bufferReadableSize(buffer);
     // 内存拷贝
-    memcpy(buffer->data, buffer->data + buffer->readPos, readable);
+    // memcpy(buffer->data, buffer->data + buffer->readPos, readable);
+    memmove(buffer->data, buffer->data + buffer->readPos, readable);
     // 更新位置
     buffer->readPos = 0;
     buffer->writePos = readable;

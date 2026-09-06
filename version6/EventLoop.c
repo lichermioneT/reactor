@@ -30,17 +30,23 @@ int readLocalMessage(void* arg)
 
 struct EventLoop* eventLoopInitEx(const char* threadName)
 {
+// 1.开空间
   struct EventLoop* evLoop = (struct EventLoop*)malloc(sizeof(struct EventLoop));
-  
+// 2.模型开关 
   evLoop->isQuit = false;
+// 3.分发模型
+  evLoop->dispatcher = &EpollDispatcher;
+  evLoop->dispatcherData = evLoop->dispatcher->init();
+// 4.任务队列
+  evLoop->head = evLoop->tail = NULL;
+// 5.map
+  evLoop->map = channelMapInit(128);
+// 6.线程的信息
   evLoop->threadID = pthread_self();
   pthread_mutex_init(&evLoop->mutex, NULL);
   strcpy(evLoop->threadName, threadName == NULL ? "main thread" : threadName);
-  evLoop->dispatcher = &EpollDispatcher;
-  evLoop->dispatcherData = evLoop->dispatcher->init();
-  evLoop->head = evLoop->tail = NULL;
-  evLoop->map = channelMapInit(128);
-  
+
+// 7.线程间通信
   int ret = socketpair(AF_UNIX, SOCK_STREAM,0, evLoop->socketPair);
   if(ret == -1)
   {

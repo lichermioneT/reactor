@@ -1,4 +1,5 @@
 #pragma once 
+#include "HttpRespone.h"
 #include <stdbool.h>
 #include "Buffer.h"
 
@@ -44,6 +45,11 @@ char* httRequestGetHeader(struct HttpRequest* request, char* key);
 // 解析请求行
 bool parseHttpRequestLine(struct HttpRequest* request, struct Buffer* buffer); 
 // 解析请求头
-bool parseHttpRequestHeader(struct HttpRequest* request, struct Buffer* buffer); 
+bool parseHttpRequestHeader(struct HttpRequest* request, struct Buffer* buffer,
+                            struct HttpRespone* respone, struct Buffer* sendbuf, int socket); 
 // 解析http请求协议
 bool parseHttpRequest(struct HttpRequest* request, Buffer* buffer);
+// 处理http协议
+bool processHttpRequest(struct HttpRequest* request);
+void decodeMsg(char* to, char* from);
+int hexToDec(char c);
