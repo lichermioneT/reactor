@@ -1,6 +1,6 @@
 #include "Channel.h"
 
-Channel::Channel(int fd, FDEvent evets, handleFunc readCallback, handleFunc writeCallback, void* arg) 
+Channel::Channel(int fd, int evets, handleFunc readCallback, handleFunc writeCallback, void* arg) 
   :_fd(fd)
   ,_evets(evets)
   ,_readCallback(readCallback)
@@ -10,28 +10,19 @@ Channel::Channel(int fd, FDEvent evets, handleFunc readCallback, handleFunc writ
 
 void Channel::writeEventEnable(bool flag)
 {
-  unsigned char evets = static_cast<unsigned char>(_evets);
-  unsigned char writeEvent = static_cast<unsigned char>(FDEvent::WriteEvent);
-
   if(flag)
   {
-    evets |= writeEvent;
+    _evets |= WriteEvent;
   }
   else 
   {
-    evets &= ~writeEvent;
+    _evets &= ~WriteEvent;
   }
-
-  _evets = static_cast<FDEvent>(evets);
 }
 
 bool Channel::isWriteEnanle()
 {
-    unsigned char events = static_cast<unsigned char>(_evets);
-
-    unsigned char writeEvent = static_cast<unsigned char>(FDEvent::WriteEvent);
-
-    return (events & writeEvent) != 0;
+  return  _evets & WriteEvent;
 }
 
 

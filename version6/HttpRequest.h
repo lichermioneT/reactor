@@ -1,7 +1,10 @@
 #pragma once 
+#include <sys/sendfile.h>
 #include "HttpRespone.h"
 #include <stdbool.h>
 #include "Buffer.h"
+#include <fcntl.h>
+#include <unistd.h>
 
 // 请求键值对
 struct RequestHeader
@@ -50,6 +53,9 @@ bool parseHttpRequestHeader(struct HttpRequest* request, struct Buffer* buffer,
 // 解析http请求协议
 bool parseHttpRequest(struct HttpRequest* request, Buffer* buffer);
 // 处理http协议
-bool processHttpRequest(struct HttpRequest* request);
+bool processHttpRequest(struct HttpRequest* request, struct HttpRespone* respone);
 void decodeMsg(char* to, char* from);
 int hexToDec(char c);
+const char* getFileType(const char* name);
+int sendDir(const char* dirName, int cfd);
+int sendFile(const char* fileName, int cfd);
